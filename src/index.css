@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  body {
+    font-family: 'Outfit', 'Inter', 'Noto Sans Odia', sans-serif;
+    background-color: #FFFDF8;
+    color: #2D1A24;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, .font-serif-royal {
+    font-family: 'Cinzel', 'Georgia', serif;
+  }
+}
+
+/* Custom Royal Light Glassmorphism Cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 10px 30px -5px rgba(184, 0, 31, 0.08), 0 4px 15px 0 rgba(212, 175, 55, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  box-shadow: 0 15px 35px -5px rgba(184, 0, 31, 0.14), 0 8px 25px 0 rgba(212, 175, 55, 0.25);
+  transform: translateY(-2px);
+}
+
+.glass-card-gold {
+  background: linear-gradient(135deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 245, 230, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  border: 2px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 12px 35px rgba(184, 0, 31, 0.1), 0 0 20px rgba(212, 175, 55, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-gold:hover {
+  border-color: rgba(212, 175, 55, 0.85);
+  box-shadow: 0 16px 40px rgba(184, 0, 31, 0.15), 0 0 28px rgba(212, 175, 55, 0.4);
+  transform: translateY(-3px);
+}
+
+.glass-card-crimson {
+  background: linear-gradient(135deg, #B8001F 0%, #8B0000 100%);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid #FFD700;
+  color: #FFFFFF;
+  box-shadow: 0 10px 30px rgba(139, 0, 0, 0.25);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #8B0000 0%, #B8001F 40%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.royal-gold-heading {
+  background: linear-gradient(135deg, #990000 0%, #B8001F 50%, #C5A028 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border-glow {
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.35);
+}
+
+.crimson-gradient-bg {
+  background: linear-gradient(135deg, #A80018 0%, #C90D2C 50%, #7D0000 100%);
+}
+
+.cream-gradient-bg {
+  background: linear-gradient(180deg, #FFFDF8 0%, #FFF5E5 50%, #FFF0DA 100%);
+}
+
+.gold-button {
+  background: linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #C59B27 100%);
+  color: #2E050B;
+  font-weight: 800;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+  transition: all 0.3s ease;
+}
+
+.gold-button:hover {
+  background: linear-gradient(135deg, #FFE44D 0%, #FFD700 50%, #D4AF37 100%);
+  box-shadow: 0 6px 22px rgba(212, 175, 55, 0.55);
+  transform: translateY(-2px);
+}
+
+.crimson-button {
+  background: linear-gradient(135deg, #B8001F 0%, #8B0000 100%);
+  color: #FFFFFF;
+  font-weight: 800;
+  border: 1px solid #FFD700;
+  box-shadow: 0 4px 15px rgba(184, 0, 31, 0.3);
+  transition: all 0.3s ease;
+}
+
+.crimson-button:hover {
+  background: linear-gradient(135deg, #D90429 0%, #A00000 100%);
+  box-shadow: 0 6px 22px rgba(184, 0, 31, 0.45);
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFFDF8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#B8001F, #D4AF37);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8001F;
+}
+
+/* Ticker Animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Floating Diya animation */
+@keyframes floatDiya {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+.animate-float-diya {
+  animation: floatDiya 4s ease-in-out infinite;
+}
+
+/* Subtle Shimmer & Pulse Glow */
+@keyframes goldPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.animate-gold-pulse {
+  animation: goldPulse 3s infinite ease-in-out;
+}
+
