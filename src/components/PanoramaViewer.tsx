@@ -79,36 +79,47 @@ export const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ imageUrl, title 
     const height = canvas.height;
     ctx.clearRect(0, 0, width, height);
 
-    if (loadedImage && !imageError) {
-      // Equirectangular 360 Wrapping Projection
+    if (loadedImage && !imageError && loadedImage.naturalWidth > 0 && loadedImage.naturalHeight > 0) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // Zoom multiplier: 75deg is standard field of view
+      const zoom = 75 / fov;
+      
+      // Calculate natural proportional scale so image is never stretched
+      const baseScale = Math.max(height / loadedImage.naturalHeight, width / loadedImage.naturalWidth);
+      const scale = baseScale * zoom;
+
+      const drawW = loadedImage.naturalWidth * scale;
+      const drawH = loadedImage.naturalHeight * scale;
+
+      // Pitch adjustment (-30 to +30 degrees)
+      const pitchPixels = (pitch / 90) * (height * 0.35);
+      const startY = (height - drawH) / 2 + pitchPixels;
+
+      // Yaw angle (0 to 360 deg) maps to horizontal continuous scroll
       const normYaw = ((yaw % 360) + 360) % 360;
-      const srcX = (normYaw / 360) * loadedImage.naturalWidth;
-      const viewWidthSrc = (fov / 360) * loadedImage.naturalWidth;
-      const viewHeightSrc = loadedImage.naturalHeight;
+      const yawProgress = normYaw / 360;
 
-      // Draw horizontal slice 1
-      const part1WidthSrc = Math.min(viewWidthSrc, loadedImage.naturalWidth - srcX);
-      const part1WidthDest = (part1WidthSrc / viewWidthSrc) * width;
+      // Infinite horizontal wrapping offset
+      let startX = -(yawProgress * drawW) % drawW;
+      if (startX > 0) startX -= drawW;
 
-      // Pitch offset in pixels
-      const pitchOffset = (pitch / 90) * (height / 3);
-
-      ctx.drawImage(
-        loadedImage,
-        srcX, 0, part1WidthSrc, viewHeightSrc,
-        0, pitchOffset, part1WidthDest, height
-      );
-
-      // Draw horizontal slice 2 (if wrapped around the 360 seam)
-      if (part1WidthSrc < viewWidthSrc) {
-        const part2WidthSrc = viewWidthSrc - part1WidthSrc;
-        const part2WidthDest = width - part1WidthDest;
-        ctx.drawImage(
-          loadedImage,
-          0, 0, part2WidthSrc, viewHeightSrc,
-          part1WidthDest, pitchOffset, part2WidthDest, height
-        );
+      // Render seamless adjacent tiles across canvas width
+      for (let x = startX; x < width; x += drawW) {
+        ctx.drawImage(loadedImage, x, startY, drawW, drawH);
       }
+
+      // Add subtle VR Lens Vignette effect overlay
+      const radialGrad = ctx.createRadialGradient(
+        width / 2, height / 2, Math.min(width, height) * 0.4,
+        width / 2, height / 2, Math.max(width, height) * 0.75
+      );
+      radialGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      radialGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+      ctx.fillStyle = radialGrad;
+      ctx.fillRect(0, 0, width, height);
+
     } else {
       // Synthetic 360 Night Pandal Canvas Background
       const normYaw = ((yaw % 360) + 360) % 360;
@@ -176,8 +187,9 @@ export const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ imageUrl, title 
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current && canvasRef.current) {
-        canvasRef.current.width = containerRef.current.clientWidth;
-        canvasRef.current.height = containerRef.current.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvasRef.current.width = containerRef.current.clientWidth * dpr;
+        canvasRef.current.height = containerRef.current.clientHeight * dpr;
         renderCanvas();
       }
     };
@@ -370,7 +382,7 @@ export const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ imageUrl, title 
       </div>
 
       {/* Drag Instruction Banner at top center */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-xs px-3 py-1 rounded-full text-[11px] font-bold text-[#FFD700] pointer-events-none shadow-sm flex items-center gap-1.5 border border-[#FFD700]/30">
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-xs px-3.5 py-1 rounded-full text-[11px] font-bold text-[#FFD700] pointer-events-none shadow-md flex items-center gap-1.5 border border-[#FFD700]/40">
         <span>👈 Drag left / right to rotate 360° camera 👉</span>
       </div>
 
@@ -407,3 +419,4 @@ export const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ imageUrl, title 
     </div>
   );
 };
+
