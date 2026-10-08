@@ -49,6 +49,15 @@ export const LiveDarshan: React.FC = () => {
     setTimeout(() => setPranamSent(false), 3000);
   };
 
+  const handleQuickOffering = (offeringText: string) => {
+    const nameToUse = donorName.trim() || 'Devotee';
+    const locToUse = location.trim() || 'Bhubaneswar';
+    addPranamMessage(nameToUse, locToUse, offeringText);
+    setPranamSent(true);
+    triggerMarigoldConfetti();
+    setTimeout(() => setPranamSent(false), 3000);
+  };
+
   const crowdGaugeColor = {
     normal: 'text-emerald-800 border-emerald-300 bg-emerald-50',
     moderate: 'text-amber-900 border-amber-300 bg-amber-50',
@@ -245,12 +254,49 @@ export const LiveDarshan: React.FC = () => {
                 </div>
               </div>
 
+              {/* Instant 1-Tap Devotion Buttons */}
+              <div className="space-y-1.5 mb-4 p-2.5 bg-amber-100/60 rounded-xl border border-amber-300">
+                <label className="block text-[11px] font-bold text-amber-950 text-left">
+                  {language === 'en' ? '⚡ Instant 1-Tap Devotional Offerings:' : '⚡ ତୁରନ୍ତ ଗୋଟିଏ କ୍ଲିକ୍ରେ ପୁଷ୍ପାର୍ପଣ ଦିଅନ୍ତୁ:'}
+                </label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickOffering('🌺 Offered Fresh Marigold Pushpanjali & Flowers to Maa Durga! 🙏')}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <span>🌺 Offer Flowers</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickOffering('🪔 Lit 108 Sacred Ghee Diya & Aarti for Maa Durga! 🙏')}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <span>🪔 Light Ghee Diya</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickOffering('🔔 Rung Sacred Temple Bell: Jai Maa Durga! Bless All Devotees! 🙏')}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <span>🔔 Ring Bell</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickOffering('🥥 Offered Sacred Shree Nariyal & Mahaprasad to Maa Durga! 🙏')}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <span>🥥 Offer Nariyal</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Prayer Form */}
               <form onSubmit={handlePranamSubmit} className="space-y-3 mb-6">
                 {pranamSent && (
                   <div className="p-2.5 rounded-lg bg-emerald-100 border border-emerald-400 text-emerald-900 text-xs font-bold flex items-center gap-2 animate-bounce">
                     <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                    <span>{language === 'en' ? 'Your prayer has been offered to Maa Durga! 🙏' : 'ମା\'ଙ୍କ ପାଦପଦ୍ମରେ ଆପଣଙ୍କ ପ୍ରଣାମ ପହଞ୍ଚିଲା! 🙏'}</span>
+                    <span>{language === 'en' ? 'Your prayer & flowers have been offered to Maa Durga! 🙏' : 'ମା\'ଙ୍କ ପାଦପଦ୍ମରେ ଆପଣଙ୍କ ପ୍ରଣାମ ପହଞ୍ଚିଲା! 🙏'}</span>
                   </div>
                 )}
 
@@ -261,7 +307,6 @@ export const LiveDarshan: React.FC = () => {
                     onChange={(e) => setDonorName(e.target.value)}
                     placeholder={language === 'en' ? 'Your Name' : 'ଆପଣଙ୍କ ନାମ'}
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs text-amber-950 focus:outline-none focus:border-[#B8001F]"
-                    required
                   />
                   <input
                     type="text"
@@ -270,6 +315,22 @@ export const LiveDarshan: React.FC = () => {
                     placeholder={language === 'en' ? 'City / Country' : 'ସହର / ଦେଶ'}
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs text-amber-950 focus:outline-none focus:border-[#B8001F]"
                   />
+                </div>
+
+                {/* Quick Emoji Bar */}
+                <div className="flex items-center gap-1 overflow-x-auto py-1 px-0.5">
+                  <span className="text-[10px] font-bold text-amber-900 shrink-0 mr-1">Add Emoji:</span>
+                  {['🌺', '🌸', '🪔', '🔔', '🥥', '🚩', '🙏', '✨', '🕉️', '🔱', '🌼', '💐'].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setMessage((prev) => (prev ? prev + ' ' + emoji : emoji))}
+                      className="p-1 px-1.5 rounded-lg bg-amber-100/90 hover:bg-amber-200 border border-amber-300 text-xs hover:scale-125 transition-transform shrink-0 cursor-pointer"
+                      title={`Insert ${emoji}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
                 </div>
 
                 <textarea
@@ -282,7 +343,7 @@ export const LiveDarshan: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full crimson-button py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold shadow-md"
+                  className="w-full crimson-button py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold shadow-md cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5 text-[#FFD700]" />
                   <span>{language === 'en' ? 'Offer Digital Flower & Prayer' : 'ପୁଷ୍ପାର୍ପଣ ଓ ପ୍ରଣାମ'}</span>
