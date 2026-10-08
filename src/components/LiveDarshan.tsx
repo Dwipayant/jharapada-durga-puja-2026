@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { YoutubeIcon } from './SocialIcons';
+import { getYouTubeEmbedUrl } from '../utils/youtube';
 import { 
   Users, 
   Heart, 
@@ -101,27 +102,10 @@ export const LiveDarshan: React.FC = () => {
               <div className="aspect-video w-full bg-black relative flex items-center justify-center">
                 <iframe
                   className="w-full h-full border-0"
-                  src={`https://www.youtube.com/embed/live_stream?channel=UC_JharapadaDurgaPuja2026&autoplay=1&mute=1`}
+                  src={getYouTubeEmbedUrl(liveConfig.youtubeId)}
                   title="Jharapada Durga Puja 2026 YouTube Live"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                  onError={() => console.warn('YouTube embed fallback')}
-                  srcDoc={`
-                    <style>
-                      body { margin:0; background:#FFFDF8; color:#2D1A24; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px; }
-                      .banner { background:linear-gradient(135deg, #FFF5E5, #FFFDF8); border:2px solid #D4AF37; padding:30px; border-radius:16px; box-shadow:0 10px 30px rgba(184,0,31,0.1); }
-                      h2 { color:#8B0000; margin-bottom:10px; font-size:24px; font-family:serif; }
-                      p { color:#2D1A24; font-size:14px; opacity:0.9; }
-                      .badge { background:#B8001F; color:#fff; padding:6px 16px; border-radius:20px; font-weight:bold; font-size:12px; display:inline-block; margin-bottom:15px; }
-                      .btn { display:inline-block; margin-top:15px; padding:10px 20px; background:#FFD700; color:#000; text-decoration:none; font-weight:bold; border-radius:8px; }
-                    </style>
-                    <div class="banner">
-                      <div class="badge">🔴 OFFICIAL 4K YOUTUBE LIVE DARSHAN</div>
-                      <h2>${language === 'en' ? 'Jharapada Durga Puja Live Stream 2026' : 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ଲାଇଭ୍ ଦର୍ଶନ'}</h2>
-                      <p>${language === 'en' ? 'Live Aarti & Bauda Garh Fort Illuminations Broadcasting Active' : 'ଆରତୀ ଓ ସୁବର୍ଣ୍ଣ ମଣ୍ଡପ ପ୍ରତ୍ୟକ୍ଷ ପ୍ରସାରଣ'}</p>
-                      <a href="https://youtube.com" target="_blank" class="btn">${language === 'en' ? 'Open YouTube HD Player' : 'ୟୁଟ୍ୟୁବରେ ଦେଖନ୍ତୁ'}</a>
-                    </div>
-                  `}
                 />
 
                 {/* Overlay Stream Info */}

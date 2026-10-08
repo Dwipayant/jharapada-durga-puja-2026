@@ -49,7 +49,7 @@ export const initialTicker: TickerAnnouncement[] = [
 
 export const initialLiveConfig: LiveStreamConfig = {
   activePlatform: 'youtube',
-  youtubeId: 'live_jharapada_2026_stream', // YouTube live stream id
+  youtubeId: 'jfKfPfyJRdk', // Default YouTube live stream video id
   facebookUrl: 'https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/facebook/videos/10153231379946729/',
   instagramUrl: 'https://www.instagram.com/p/C-jharapada2026/',
   titleEn: 'Maha Ashtami Sandhya Aarti & Grand Pandal Darshan Live 4K',
