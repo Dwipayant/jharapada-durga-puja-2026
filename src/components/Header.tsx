@@ -23,7 +23,8 @@ export const Header: React.FC = () => {
     setIsAdminModalOpen,
     isAdminLoggedIn,
     crowdStatus,
-    setIsLiveModalOpen
+    setIsLiveModalOpen,
+    t
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,7 +50,7 @@ export const Header: React.FC = () => {
         <div className="bg-gradient-to-r from-[#B8001F] via-[#8B0000] to-[#B8001F] text-[#FFFFFF] py-1.5 px-4 text-xs font-semibold overflow-hidden border-b border-[#FFD700]/40 flex items-center shadow-inner">
           <div className="flex items-center gap-1.5 bg-[#FFD700] text-[#4A000B] px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider shrink-0 z-10 shadow-sm mr-2 whitespace-nowrap">
             <Radio className="w-3 h-3 animate-pulse shrink-0" />
-            <span>{language === 'en' ? 'LIVE ANNOUNCEMENTS' : 'ମୁଖ୍ୟ ସୂଚନା'}</span>
+            <span>{t('header_announcement_tag', 'LIVE ANNOUNCEMENTS', 'ମୁଖ୍ୟ ସୂଚନା')}</span>
           </div>
           <div className="relative w-full overflow-hidden">
             <div className="animate-marquee whitespace-nowrap flex gap-12">

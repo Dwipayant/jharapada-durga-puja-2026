@@ -73,6 +73,25 @@ export interface StallItem {
   rating?: number;
 }
 
+export interface AdminUser {
+  id: string;
+  username: string;
+  fullName: string;
+  role: 'admin' | 'security' | 'volunteer';
+  createdAt?: string;
+}
+
+export interface PassScanRecord {
+  id: string;
+  passId: string;
+  fullName: string;
+  passType: string;
+  gate: string;
+  status: 'Entry Granted' | 'Duplicate Scan' | 'Invalid';
+  scannedBy: string;
+  scannedAt: string;
+}
+
 export interface DigitalPass {
   id: string;
   passType: 'Senior Citizen' | 'Differently Abled' | 'VIP Guest' | 'Committee Patron';
@@ -83,7 +102,9 @@ export interface DigitalPass {
   visitDate: string;
   timeSlot: string;
   qrCodeValue: string;
-  status: 'Approved' | 'Pending';
+  status: 'Approved' | 'Used' | 'Pending';
+  scannedAt?: string;
+  scanCount?: number;
   createdAt: string;
 }
 

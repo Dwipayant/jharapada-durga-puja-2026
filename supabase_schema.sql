@@ -17,6 +17,8 @@ DROP TABLE IF EXISTS public.donations CASCADE;
 DROP TABLE IF EXISTS public.gallery CASCADE;
 DROP TABLE IF EXISTS public.history_stories CASCADE;
 DROP TABLE IF EXISTS public.pranam_messages CASCADE;
+DROP TABLE IF EXISTS public.pass_scans CASCADE;
+DROP TABLE IF EXISTS public.admin_users CASCADE;
 
 -- 1. TICKER ANNOUNCEMENTS TABLE
 CREATE TABLE public.tickers (
@@ -94,6 +96,8 @@ CREATE TABLE public.passes (
   time_slot TEXT NOT NULL,
   qr_code_value TEXT UNIQUE NOT NULL,
   status TEXT DEFAULT 'Approved',
+  scanned_at TIMESTAMPTZ,
+  scan_count INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -153,6 +157,38 @@ CREATE TABLE public.pranam_messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 11. ADMIN USERS TABLE (USERNAME & PASSWORD AUTHENTICATION)
+CREATE TABLE public.admin_users (
+  id TEXT PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT CHECK (role IN ('admin', 'superadmin', 'security', 'volunteer')) DEFAULT 'admin',
+  last_login TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 12. GATE VIP PASS SCANS & REAL-TIME ENTRY LOGS TABLE
+CREATE TABLE public.pass_scans (
+  id TEXT PRIMARY KEY,
+  pass_id TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  pass_type TEXT NOT NULL,
+  gate TEXT DEFAULT 'Gate-B (Jharapada Jail Side)',
+  status TEXT DEFAULT 'Entry Granted',
+  scanned_by TEXT DEFAULT 'Gate QR Scanner',
+  scanned_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. SITE TRANSLATIONS & ODIA LANGUAGE CUSTOM TEXT TABLE
+CREATE TABLE public.site_translations (
+  key TEXT PRIMARY KEY,
+  section TEXT NOT NULL,
+  text_en TEXT NOT NULL,
+  text_or TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 
 -- ==============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES FOR ALL TABLES
@@ -167,6 +203,12 @@ ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gallery ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.history_stories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pranam_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pass_scans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_translations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public Read Site Translations" ON public.site_translations FOR SELECT USING (true);
+CREATE POLICY "Public Write Site Translations" ON public.site_translations FOR ALL USING (true);
 
 -- PUBLIC READ & WRITE POLICIES (ENABLES WEBSITES & ADMIN PORTAL ACCESS)
 CREATE POLICY "Public Read All Tickers" ON public.tickers FOR SELECT USING (true);
@@ -186,6 +228,7 @@ CREATE POLICY "Public Write Stalls" ON public.stalls FOR ALL USING (true);
 
 CREATE POLICY "Public Read Passes" ON public.passes FOR SELECT USING (true);
 CREATE POLICY "Public Insert Passes" ON public.passes FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Update Passes" ON public.passes FOR UPDATE USING (true);
 
 CREATE POLICY "Public Read Donations" ON public.donations FOR SELECT USING (true);
 CREATE POLICY "Public Insert Donations" ON public.donations FOR INSERT WITH CHECK (true);
@@ -198,6 +241,12 @@ CREATE POLICY "Public Write History Stories" ON public.history_stories FOR ALL U
 
 CREATE POLICY "Public Read Pranam Messages" ON public.pranam_messages FOR SELECT USING (true);
 CREATE POLICY "Public Write Pranam Messages" ON public.pranam_messages FOR ALL USING (true);
+
+CREATE POLICY "Public Read Admin Users" ON public.admin_users FOR SELECT USING (true);
+CREATE POLICY "Public Write Admin Users" ON public.admin_users FOR ALL USING (true);
+
+CREATE POLICY "Public Read Pass Scans" ON public.pass_scans FOR SELECT USING (true);
+CREATE POLICY "Public Insert Pass Scans" ON public.pass_scans FOR INSERT WITH CHECK (true);
 
 
 -- ==============================================================================
@@ -282,3 +331,10 @@ INSERT INTO public.stalls (id, stall_no, name_en, name_or, category, description
 ('s-6', 'H-03', 'Boyanika Odisha Handloom & Dokra Crafts', 'ବୟନିକା ଓଡ଼ିଶା ହସ୍ତତନ୍ତ ଓ ଢୋକ୍ରା ଶିଳ୍ପ', 'handicraft', 'Sambalpuri Sarees, Pipli Applique lamps, Wooden Jagannath Idols & Terracotta.', 'ସମ୍ବଲପୁରୀ ଶାଢ଼ୀ, ପିପିଲି ଚାନ୍ଦୁଆ ଓ କାଠ ତିଆରି ସାମଗ୍ରୀ', '{"x": 65, "y": 70}'::jsonb, null, 4.6),
 ('s-7', 'G-01', 'Senior Citizen & VIP Express Entrance Gate-B', 'ବରିଷ୍ଠ ନାଗରିକ ଓ ଭିଆଇପି ପ୍ରବେଶ ଦ୍ୱାର', 'helpdesk', 'Fast-track entry gate with wheelchair support and digital QR pass scanning.', 'ହୁଇଲ୍‌ଚେୟାର୍ ଓ QR ପାସ୍ ମାଧ୍ୟମରେ ସ୍ୱତନ୍ତ୍ର ପ୍ରବେଶ', '{"x": 15, "y": 20}'::jsonb, null, 4.9)
 ON CONFLICT (id) DO NOTHING;
+
+-- 8. SEED ADMIN AUTHENTICATION USERS
+INSERT INTO public.admin_users (id, username, password, full_name, role) VALUES
+('adm-1', 'admin', 'admin2026', 'Jharapada Puja Committee Admin', 'admin'),
+('adm-2', 'gate_security', 'gate2026', 'Gate-B Security Officer', 'security')
+ON CONFLICT (username) DO NOTHING;
+

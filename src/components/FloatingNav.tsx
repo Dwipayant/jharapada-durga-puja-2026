@@ -90,7 +90,7 @@ export const FloatingNav: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 max-w-[95vw] sm:max-w-auto">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 max-w-[95vw] sm:max-w-auto no-print">
       {/* Floating Glass Navigation Dock */}
       <nav className="glass-card-gold px-3 sm:px-5 py-2.5 rounded-full border-2 border-[#D4AF37] shadow-2xl flex items-center gap-1.5 sm:gap-3 backdrop-blur-xl bg-white/95">
         {navItems.map((item) => {

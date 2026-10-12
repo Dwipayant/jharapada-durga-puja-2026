@@ -25,11 +25,12 @@ import {
   Shield,
   RefreshCw,
   Sparkles,
-  X
+  X,
+  Camera
 } from 'lucide-react';
 
 export const PassesAndDonation: React.FC = () => {
-  const { language, createPass, createDonation, upiId, registerModalOpen } = useApp();
+  const { language, createPass, createDonation, upiId, registerModalOpen, setIsCameraScannerOpen, t } = useApp();
 
   const [activeTab, setActiveTab] = useState<'pass' | 'donation'>('donation');
 
@@ -137,6 +138,28 @@ export const PassesAndDonation: React.FC = () => {
     triggerMarigoldConfetti();
   };
 
+  const handlePrintPass = () => {
+    const originalTitle = document.title;
+    if (generatedPass) {
+      document.title = `VIP_Pass_${generatedPass.id}_${generatedPass.fullName.replace(/\s+/g, '_')}`;
+    }
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1500);
+  };
+
+  const handlePrintReceipt = () => {
+    const originalTitle = document.title;
+    if (generatedDonation) {
+      document.title = `Donation_Receipt_${generatedDonation.receiptNumber}_${generatedDonation.donorName.replace(/\s+/g, '_')}`;
+    }
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1500);
+  };
+
   // Real-time Payment Verification & Checkout Trigger
   const handleDonationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,7 +211,7 @@ export const PassesAndDonation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
+        <div className="text-center max-w-3xl mx-auto mb-10 no-print">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-[#B8001F] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
             <Sparkles className="w-4 h-4 text-[#B8001F]" />
             <span>{language === 'en' ? 'Digital Passes & E-Donation Portal' : 'ଇ-ପାସ୍ ଓ ଅନଲାଇନ୍ ଦାନ'}</span>
@@ -204,7 +227,7 @@ export const PassesAndDonation: React.FC = () => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-10 no-print">
           <div className="glass-card p-1.5 rounded-2xl flex items-center gap-2 shadow-md">
             <button
               onClick={() => setActiveTab('pass')}
@@ -215,7 +238,7 @@ export const PassesAndDonation: React.FC = () => {
               }`}
             >
               <Ticket className="w-4 h-4 text-[#FFD700]" />
-              <span>{language === 'en' ? 'Get Express QR Pass' : 'ଇ-ପାସ୍ ହାସଲ କରନ୍ତୁ'}</span>
+              <span>{t('pass_tab_title', 'Get Express QR Pass', 'ଇ-ପାସ୍ ହାସଲ କରନ୍ତୁ')}</span>
             </button>
 
             <button
@@ -227,23 +250,23 @@ export const PassesAndDonation: React.FC = () => {
               }`}
             >
               <Heart className="w-4 h-4 fill-current text-rose-300" />
-              <span>{language === 'en' ? 'Instant E-Donation' : 'ଅନଲାଇନ୍ ଦାନ'}</span>
+              <span>{t('donation_tab_title', 'Instant E-Donation', 'ଅନଲାଇନ୍ ଦାନ')}</span>
             </button>
           </div>
         </div>
 
         {/* PASS TAB */}
         {activeTab === 'pass' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="pass-grid-container grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Pass Registration Form */}
-            <div className="lg:col-span-7 glass-card p-6 rounded-2xl border-t-4 border-t-[#B8001F] shadow-md">
+            <div className="lg:col-span-7 glass-card p-6 rounded-2xl border-t-4 border-t-[#B8001F] shadow-md no-print">
               <h3 className="text-xl font-bold font-serif-royal text-[#7D0000] mb-2 flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-[#B8001F]" />
-                <span>{language === 'en' ? 'Senior Citizen / VIP Express Pass Form' : 'ବରିଷ୍ଠ ନାଗରିକ ଓ ଭିନ୍ନକ୍ଷମ ପାସ୍ ବୁକିଂ'}</span>
+                <span>{t('pass_form_title', 'Senior Citizen / VIP Express Pass Form', 'ବରିଷ୍ଠ ନାଗରିକ ଓ ଭିନ୍ନକ୍ଷମ ପାସ୍ ବୁକିଂ')}</span>
               </h3>
               <p className="text-xs text-amber-950/80 font-medium mb-6">
-                {language === 'en' ? 'Generates an express QR pass for Gate-B fast-track entry with wheelchair support.' : 'ଗେଟ୍-B ସ୍ୱତନ୍ତ୍ର ପ୍ରବେଶ ଦ୍ୱାର ପାଇଁ QR ପାସ୍ ହାସଲ କରନ୍ତୁ ।'}
+                {t('pass_form_desc', 'Generates an express QR pass for Gate-B fast-track entry with wheelchair support.', 'ଗେଟ୍-B ସ୍ୱତନ୍ତ୍ର ପ୍ରବେଶ ଦ୍ୱାର ପାଇଁ QR ପାସ୍ ହାସଲ କରନ୍ତୁ ।')}
               </p>
 
               <form onSubmit={handlePassSubmit} className="space-y-4">
@@ -349,9 +372,9 @@ export const PassesAndDonation: React.FC = () => {
             </div>
 
             {/* Generated QR Pass Preview Card */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 pass-card-wrapper">
               {generatedPass ? (
-                <div className="glass-card-gold p-6 rounded-2xl border-2 border-[#D4AF37] text-center shadow-xl animate-fadeIn relative">
+                <div id="printable-vip-pass" className="glass-card-gold p-6 rounded-2xl border-2 border-[#D4AF37] text-center shadow-xl animate-fadeIn relative">
                   <div className="absolute top-3 right-3">
                     <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase">
                       VERIFIED PASS
@@ -396,15 +419,24 @@ export const PassesAndDonation: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => window.print()}
-                    className="w-full crimson-button py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2"
+                    onClick={handlePrintPass}
+                    className="w-full crimson-button py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 no-print cursor-pointer"
                   >
                     <Printer className="w-4 h-4 text-[#FFD700]" />
                     <span>{language === 'en' ? 'Print / Download QR Pass' : 'ପ୍ରିଣ୍ଟ କରନ୍ତୁ'}</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraScannerOpen(true)}
+                    className="w-full mt-2 py-2 px-3 rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 text-amber-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors no-print cursor-pointer shadow-xs"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-[#B8001F]" />
+                    <span>{language === 'en' ? 'Gate Security: Scan Pass with Camera' : 'ଗେଟ୍ ଯାଞ୍ଚ: କ୍ୟାମେରା ସ୍କାନ କରନ୍ତୁ'}</span>
+                  </button>
                 </div>
               ) : (
-                <div className="glass-card p-8 rounded-2xl text-center border-dashed border-2 border-amber-300">
+                <div className="glass-card p-8 rounded-2xl text-center border-dashed border-2 border-amber-300 no-print">
                   <QrCode className="w-16 h-16 text-amber-600/70 mx-auto mb-3 animate-pulse" />
                   <h4 className="text-lg font-bold text-[#7D0000] font-serif-royal mb-2">
                     {language === 'en' ? 'Your QR Pass Will Appear Here' : 'ଆପଣଙ୍କ QR ପାସ୍ ଏଠାରେ ଦେଖାଯିବ'}
@@ -421,10 +453,10 @@ export const PassesAndDonation: React.FC = () => {
 
         {/* DONATION TAB */}
         {activeTab === 'donation' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="pass-grid-container grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Donation Form & Real-time Payment Options */}
-            <div className="lg:col-span-7 glass-card p-6 rounded-2xl border-t-4 border-t-amber-500 shadow-md">
+            <div className="lg:col-span-7 glass-card p-6 rounded-2xl border-t-4 border-t-amber-500 shadow-md no-print">
               <h3 className="text-xl font-bold font-serif-royal text-[#7D0000] mb-2 flex items-center gap-2">
                 <Heart className="w-5 h-5 text-[#B8001F] fill-[#B8001F]" />
                 <span>{language === 'en' ? 'Bhog Seva & Festival Welfare E-Donation' : 'ଅନଲାଇନ୍ ସେବା ଦାନ'}</span>
@@ -672,9 +704,9 @@ export const PassesAndDonation: React.FC = () => {
             </div>
 
             {/* Instant Generated 80G E-Receipt Preview */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 pass-card-wrapper">
               {generatedDonation ? (
-                <div className="glass-card-gold p-6 rounded-2xl border-2 border-[#D4AF37] text-center shadow-xl animate-fadeIn relative">
+                <div id="printable-donation-receipt" className="glass-card-gold p-6 rounded-2xl border-2 border-[#D4AF37] text-center shadow-xl animate-fadeIn relative">
                   <div className="flex items-center justify-between pb-3 border-b border-amber-300 mb-4">
                     <div className="flex items-center gap-1.5 text-[#8B0000] font-bold text-xs">
                       <Award className="w-4 h-4" />
@@ -714,15 +746,15 @@ export const PassesAndDonation: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => window.print()}
-                    className="w-full crimson-button py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"
+                    onClick={handlePrintReceipt}
+                    className="w-full crimson-button py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 no-print cursor-pointer"
                   >
                     <Download className="w-4 h-4 text-[#FFD700]" />
                     <span>{language === 'en' ? 'Download 80G Tax Receipt (PDF)' : 'ରସିଦ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ'}</span>
                   </button>
                 </div>
               ) : (
-                <div className="glass-card p-8 rounded-2xl text-center border-dashed border-2 border-amber-300">
+                <div className="glass-card p-8 rounded-2xl text-center border-dashed border-2 border-amber-300 no-print">
                   <Heart className="w-16 h-16 text-rose-500/80 mx-auto mb-3 animate-pulse" />
                   <h4 className="text-lg font-bold text-[#7D0000] font-serif-royal mb-2">
                     {language === 'en' ? 'Your 80G Receipt Will Be Generated Here' : 'ଆପଣଙ୍କ ଦାନ ରସିଦ୍ ଏଠାରେ ପ୍ରସ୍ତୁତ ହେବ'}
@@ -742,7 +774,7 @@ export const PassesAndDonation: React.FC = () => {
       {/* Real-time Payment Gateway Modal */}
       {isProcessingPayment && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn no-print"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsProcessingPayment(false);
           }}

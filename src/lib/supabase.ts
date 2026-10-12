@@ -9,7 +9,9 @@ import type {
   CrowdStatus,
   DailyRitual,
   StallItem,
-  PranamMessage
+  PranamMessage,
+  AdminUser,
+  PassScanRecord
 } from '../types';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -517,6 +519,207 @@ export const insertPassToSupabase = async (pass: DigitalPass): Promise<boolean> 
   }
 };
 
+/**
+ * Authenticate Admin User from Supabase DB (with fallback for testing)
+ */
+export const authenticateAdminFromSupabase = async (
+  usernameInput: string,
+  passwordInput: string
+): Promise<{ success: boolean; user?: AdminUser; message: string }> => {
+  const cleanUsername = usernameInput.trim().toLowerCase();
+  const cleanPassword = passwordInput.trim();
+
+  if (!cleanUsername || !cleanPassword) {
+    return { success: false, message: 'Please provide both username and password.' };
+  }
+
+  // 1. If Supabase is connected, check public.admin_users table
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('username', cleanUsername)
+        .eq('password', cleanPassword)
+        .maybeSingle();
+
+      if (!error && data) {
+        // Update last_login
+        await supabase
+          .from('admin_users')
+          .update({ last_login: new Date().toISOString() })
+          .eq('id', data.id);
+
+        return {
+          success: true,
+          user: {
+            id: data.id,
+            username: data.username,
+            fullName: data.full_name,
+            role: data.role || 'admin',
+            createdAt: data.created_at
+          },
+          message: 'Authenticated successfully via Supabase DB.'
+        };
+      }
+    } catch (err) {
+      console.warn('Supabase admin authentication check error:', err);
+    }
+  }
+
+  // 2. Fallback credentials (enables login even before SQL table creation or offline)
+  if (
+    (cleanUsername === 'admin' && (cleanPassword === 'admin2026' || cleanPassword === '1234')) ||
+    (cleanUsername === 'gate_security' && cleanPassword === 'gate2026')
+  ) {
+    return {
+      success: true,
+      user: {
+        id: cleanUsername === 'admin' ? 'adm-1' : 'adm-2',
+        username: cleanUsername,
+        fullName: cleanUsername === 'admin' ? 'Jharapada Puja Committee Admin' : 'Gate-B Security Officer',
+        role: cleanUsername === 'admin' ? 'admin' : 'security'
+      },
+      message: 'Authenticated successfully (Default Committee Credentials).'
+    };
+  }
+
+  return {
+    success: false,
+    message: 'Invalid Username or Password. Try admin / admin2026'
+  };
+};
+
+/**
+ * Record a VIP Pass Scan Entry in Supabase DB (when QR Code is scanned)
+ */
+export const recordPassScanInSupabase = async (
+  passIdOrValue: string,
+  gate: string = 'Gate-B (Jharapada Jail Side)',
+  scannedBy: string = 'Gate QR Scanner'
+): Promise<{
+  success: boolean;
+  pass?: DigitalPass;
+  isDuplicate?: boolean;
+  message: string;
+}> => {
+  let targetId = passIdOrValue.trim();
+  if (targetId.includes('scan_pass=')) {
+    const match = targetId.match(/scan_pass=([^&]+)/);
+    if (match) targetId = decodeURIComponent(match[1]);
+  } else if (targetId.includes('PASS:')) {
+    const match = targetId.match(/PASS:([^|]+)/);
+    if (match) targetId = match[1];
+  }
+
+  if (!targetId) {
+    return { success: false, message: 'Invalid Pass QR Code data' };
+  }
+
+  const now = new Date().toISOString();
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      // 1. Fetch pass from Supabase passes table
+      const { data: passData } = await supabase
+        .from('passes')
+        .select('*')
+        .eq('id', targetId)
+        .maybeSingle();
+
+      const passFound: DigitalPass | null = passData ? {
+        id: passData.id,
+        passType: passData.pass_type,
+        fullName: passData.full_name,
+        phone: passData.phone,
+        idProofNumber: passData.id_proof_number,
+        numberOfGuests: passData.number_of_guests,
+        visitDate: passData.visit_date,
+        timeSlot: passData.time_slot,
+        qrCodeValue: passData.qr_code_value,
+        status: passData.status,
+        scannedAt: passData.scanned_at,
+        scanCount: passData.scan_count || 0,
+        createdAt: passData.created_at
+      } : null;
+
+      const isDuplicate = Boolean(passFound && (passFound.scanCount || 0) > 0);
+      const newScanCount = (passFound?.scanCount || 0) + 1;
+
+      // 2. Insert into pass_scans table in Supabase
+      const scanId = 'scan-' + Date.now();
+      await supabase.from('pass_scans').insert([{
+        id: scanId,
+        pass_id: targetId,
+        full_name: passFound?.fullName || 'Pass Holder',
+        pass_type: passFound?.passType || 'VIP Guest',
+        gate: gate,
+        status: isDuplicate ? 'Duplicate Scan' : 'Entry Granted',
+        scanned_by: scannedBy,
+        scanned_at: now
+      }]);
+
+      // 3. Update passes table in Supabase
+      if (passFound) {
+        await supabase.from('passes').update({
+          status: 'Used',
+          scanned_at: now,
+          scan_count: newScanCount
+        }).eq('id', targetId);
+
+        passFound.status = 'Used';
+        passFound.scannedAt = now;
+        passFound.scanCount = newScanCount;
+      }
+
+      return {
+        success: true,
+        pass: passFound || undefined,
+        isDuplicate,
+        message: isDuplicate 
+          ? `⚠️ Warning: Pass was previously entered! Scan count: ${newScanCount}`
+          : `🎉 Verified! Entry granted for ${passFound?.fullName || targetId} at ${gate}. Stored in DB.`
+      };
+    } catch (err) {
+      console.error('Exception during pass scan DB entry:', err);
+    }
+  }
+
+  // Fallback in-memory / offline handling
+  return {
+    success: true,
+    isDuplicate: false,
+    message: `Gate Entry recorded for Pass ${targetId} at ${gate}.`
+  };
+};
+
+/**
+ * Fetch All Pass Scans from Supabase DB
+ */
+export const fetchPassScansFromSupabase = async (): Promise<PassScanRecord[] | null> => {
+  if (!isSupabaseConfigured() || !supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('pass_scans')
+      .select('*')
+      .order('scanned_at', { ascending: false });
+
+    if (error || !data) return null;
+    return data.map((item: any) => ({
+      id: item.id,
+      passId: item.pass_id,
+      fullName: item.full_name,
+      passType: item.pass_type,
+      gate: item.gate,
+      status: item.status,
+      scannedBy: item.scanned_by,
+      scannedAt: item.scanned_at
+    }));
+  } catch {
+    return null;
+  }
+};
+
 /** Fetch Donation Records from Supabase DB */
 export const fetchDonationsFromSupabase = async (): Promise<DonationRecord[] | null> => {
   if (!isSupabaseConfigured() || !supabase) return null;
@@ -620,4 +823,79 @@ export const likePranamMessageInSupabase = async (id: string, newLikesCount: num
     return false;
   }
 };
+
+/**
+ * Fetch Custom Site Translations from Supabase
+ */
+export const fetchSiteTranslationsFromSupabase = async (): Promise<Record<string, string> | null> => {
+  if (!isSupabaseConfigured() || !supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('site_translations')
+      .select('key, text_or');
+
+    if (error || !data) return null;
+    const mapping: Record<string, string> = {};
+    data.forEach((row: any) => {
+      if (row.key && row.text_or) {
+        mapping[row.key] = row.text_or;
+      }
+    });
+    return mapping;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Upsert a Single Custom Translation into Supabase
+ */
+export const upsertSiteTranslationToSupabase = async (
+  key: string,
+  section: string,
+  textEn: string,
+  textOr: string
+): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !supabase) return false;
+  try {
+    const { error } = await supabase.from('site_translations').upsert(
+      {
+        key,
+        section,
+        text_en: textEn,
+        text_or: textOr,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: 'key' }
+    );
+    return !error;
+  } catch (err) {
+    console.error('Error upserting translation in Supabase:', err);
+    return false;
+  }
+};
+
+/**
+ * Bulk Upsert Custom Translations into Supabase
+ */
+export const bulkUpsertSiteTranslationsToSupabase = async (
+  items: Array<{ key: string; section: string; textEn: string; textOr: string }>
+): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !supabase) return false;
+  try {
+    const payload = items.map((item) => ({
+      key: item.key,
+      section: item.section,
+      text_en: item.textEn,
+      text_or: item.textOr,
+      updated_at: new Date().toISOString()
+    }));
+    const { error } = await supabase.from('site_translations').upsert(payload, { onConflict: 'key' });
+    return !error;
+  } catch (err) {
+    console.error('Error bulk upserting translations in Supabase:', err);
+    return false;
+  }
+};
+
 

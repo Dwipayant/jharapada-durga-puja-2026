@@ -170,3 +170,117 @@ html {
   animation: goldPulse 3s infinite ease-in-out;
 }
 
+/* =========================================
+   PRINT STYLES FOR VIP PASS & 80G RECEIPT
+   ========================================= */
+@media print {
+  @page {
+    size: portrait;
+    margin: 8mm;
+  }
+
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html,
+  body,
+  #root,
+  .min-h-screen,
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    background: #FFFDF8 !important;
+    overflow: visible !important;
+  }
+
+  /* Hide all external page sections, navs, headers, footers, modals */
+  header,
+  footer,
+  nav,
+  aside,
+  .floating-nav,
+  .no-print,
+  main > section:not(#passes-donations),
+  [role="dialog"],
+  .admin-modal,
+  .livestream-modal {
+    display: none !important;
+  }
+
+  /* Reset passes-donations section container */
+  #passes-donations {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  #passes-donations .max-w-7xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #passes-donations .pass-grid-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding-top: 15px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  #passes-donations .pass-card-wrapper {
+    width: 100% !important;
+    max-width: 380px !important;
+    margin: 0 auto !important;
+  }
+
+  /* VIP Pass Card Print Specifics */
+  #printable-vip-pass {
+    width: 100% !important;
+    max-width: 380px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    background: #FFFDF8 !important;
+    border: 2px solid #D4AF37 !important;
+    border-radius: 18px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printable-vip-pass .bg-white\/90 {
+    background: #FFFFFF !important;
+    border: 1px solid #E6D2B5 !important;
+  }
+
+  /* Donation Receipt Print Specifics */
+  #printable-donation-receipt {
+    width: 100% !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    background: #FFFDF8 !important;
+    border: 2px solid #D4AF37 !important;
+    border-radius: 18px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printable-donation-receipt .bg-white\/90 {
+    background: #FFFFFF !important;
+    border: 1px solid #E6D2B5 !important;
+  }
+}
+

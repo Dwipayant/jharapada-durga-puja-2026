@@ -19,14 +19,30 @@ import {
   Database,
   Loader2,
   RefreshCw,
-  BookOpen
+  BookOpen,
+  User,
+  LogOut,
+  QrCode,
+  Ticket,
+  AlertTriangle,
+  Camera,
+  Languages,
+  Search,
+  Save,
+  RotateCcw
 } from 'lucide-react';
+import { DEFAULT_TRANSLATIONS } from '../data/translations';
 
 export const AdminModal: React.FC = () => {
   const { 
     language, 
     isAdminLoggedIn, 
-    setIsAdminLoggedIn, 
+    adminUser,
+    loginAdminWithCredentials,
+    logoutAdmin,
+    passScans,
+    scanPassEntry,
+    setIsCameraScannerOpen,
     isAdminModalOpen, 
     setIsAdminModalOpen,
     liveConfig,
@@ -46,12 +62,32 @@ export const AdminModal: React.FC = () => {
     donations,
     historyStories,
     addHistoryStory,
-    deleteHistoryStory
+    deleteHistoryStory,
+    customTranslations,
+    updateTranslation,
+    bulkUpdateTranslations,
+    resetTranslation
   } = useApp();
 
+  const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [adminTab, setAdminTab] = useState<'stream' | 'ticker' | 'crowd' | 'rituals' | 'upload' | 'history' | 'analytics'>('stream');
+  const [adminTab, setAdminTab] = useState<'stream' | 'ticker' | 'crowd' | 'rituals' | 'upload' | 'history' | 'analytics' | 'scanner' | 'translations'>('translations');
+  
+  // Translation Editor state
+  const [translationSearch, setTranslationSearch] = useState('');
+  const [translationSectionFilter, setTranslationSectionFilter] = useState<string>('all');
+  const [editedTranslations, setEditedTranslations] = useState<Record<string, string>>({});
+  const [savedKeyNotification, setSavedKeyNotification] = useState<string | null>(null);
+  const [isSavingKey, setIsSavingKey] = useState<string | null>(null);
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
+  const [bulkSaveSuccess, setBulkSaveSuccess] = useState(false);
+
+  // Gate Scanner manual entry state
+  const [manualScanInput, setManualScanInput] = useState('');
+  const [manualScanMsg, setManualScanMsg] = useState<{ text: string; isError?: boolean } | null>(null);
+  const [isProcessingManualScan, setIsProcessingManualScan] = useState(false);
 
   // History / Press submission form state
   const [storyTitleEn, setStoryTitleEn] = useState('');
@@ -107,13 +143,46 @@ export const AdminModal: React.FC = () => {
     setIsTestingSupabase(false);
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'admin2026' || passwordInput === '1234') {
-      setIsAdminLoggedIn(true);
-      setLoginError('');
-    } else {
-      setLoginError('Invalid Admin Passcode! Use "admin2026"');
+    if (!usernameInput.trim() || !passwordInput.trim()) {
+      setLoginError('Please enter both username and password.');
+      return;
+    }
+    setIsLoggingIn(true);
+    setLoginError('');
+    try {
+      const res = await loginAdminWithCredentials(usernameInput.trim(), passwordInput.trim());
+      if (res.success) {
+        setLoginError('');
+      } else {
+        setLoginError(res.message);
+      }
+    } catch {
+      setLoginError('Authentication failed. Please verify credentials.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleManualScanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualScanInput.trim()) return;
+    setIsProcessingManualScan(true);
+    setManualScanMsg(null);
+    try {
+      const res = await scanPassEntry(manualScanInput.trim());
+      setManualScanMsg({
+        text: res.message,
+        isError: !res.success || res.isDuplicate
+      });
+      if (res.success && !res.isDuplicate) {
+        setManualScanInput('');
+      }
+    } catch {
+      setManualScanMsg({ text: 'Error recording gate entry in database.', isError: true });
+    } finally {
+      setIsProcessingManualScan(false);
     }
   };
 
@@ -250,6 +319,62 @@ export const AdminModal: React.FC = () => {
     setTimeout(() => setStorySuccess(false), 3500);
   };
 
+  // Translation Editor Action Handlers
+  const handleTranslationTextChange = (key: string, val: string) => {
+    setEditedTranslations(prev => ({ ...prev, [key]: val }));
+  };
+
+  const handleSaveSingleTranslation = async (item: typeof DEFAULT_TRANSLATIONS[0]) => {
+    const val = editedTranslations[item.key] ?? customTranslations[item.key] ?? item.defaultOr;
+    setIsSavingKey(item.key);
+    await updateTranslation(item.key, val);
+    setIsSavingKey(null);
+    setSavedKeyNotification(item.key);
+    setTimeout(() => {
+      setSavedKeyNotification(prev => prev === item.key ? null : prev);
+    }, 2500);
+  };
+
+  const handleResetSingleTranslation = async (item: typeof DEFAULT_TRANSLATIONS[0]) => {
+    if (confirm(`Reset "${item.label}" back to original default Odia text?`)) {
+      setIsSavingKey(item.key);
+      await resetTranslation(item.key);
+      setEditedTranslations(prev => {
+        const next = { ...prev };
+        delete next[item.key];
+        return next;
+      });
+      setIsSavingKey(null);
+      setSavedKeyNotification(item.key);
+      setTimeout(() => {
+        setSavedKeyNotification(prev => prev === item.key ? null : prev);
+      }, 2500);
+    }
+  };
+
+  const handleSaveAllTranslations = async () => {
+    setIsBulkSaving(true);
+    await bulkUpdateTranslations(editedTranslations);
+    setIsBulkSaving(false);
+    setBulkSaveSuccess(true);
+    setTimeout(() => setBulkSaveSuccess(false), 3000);
+  };
+
+  const filteredTranslations = DEFAULT_TRANSLATIONS.filter((item) => {
+    const matchesSection = translationSectionFilter === 'all' || item.section === translationSectionFilter;
+    if (!matchesSection) return false;
+    if (!translationSearch.trim()) return true;
+    const q = translationSearch.toLowerCase();
+    const currentOr = (editedTranslations[item.key] ?? customTranslations[item.key] ?? item.defaultOr).toLowerCase();
+    return (
+      item.label.toLowerCase().includes(q) ||
+      item.textEn.toLowerCase().includes(q) ||
+      item.defaultOr.toLowerCase().includes(q) ||
+      currentOr.includes(q) ||
+      item.key.toLowerCase().includes(q)
+    );
+  });
+
   const totalDonationAmount = donations.reduce((sum, d) => sum + d.amount, 0);
 
   return (
@@ -272,12 +397,35 @@ export const AdminModal: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsAdminModalOpen(false)}
-            className="p-2 rounded-lg bg-amber-100 text-amber-900 hover:text-black hover:bg-amber-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isAdminLoggedIn && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-amber-100 rounded-lg text-xs font-bold text-amber-950 border border-amber-300">
+                <User className="w-3.5 h-3.5 text-[#B8001F]" />
+                <span>{adminUser?.fullName || 'Committee Admin'}</span>
+                <span className="text-[10px] bg-[#B8001F] text-white px-1.5 py-0.2 rounded font-black uppercase">
+                  {adminUser?.role || 'admin'}
+                </span>
+              </div>
+            )}
+
+            {isAdminLoggedIn && (
+              <button
+                onClick={logoutAdmin}
+                className="px-3 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-800 border border-red-300 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+                title="Logout"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Logout</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsAdminModalOpen(false)}
+              className="p-2 rounded-lg bg-amber-100 text-amber-900 hover:text-black hover:bg-amber-200 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* LOGIN SCREEN IF NOT AUTHENTICATED */}
@@ -287,36 +435,83 @@ export const AdminModal: React.FC = () => {
               <Lock className="w-8 h-8" />
             </div>
             <h4 className="text-xl font-bold text-[#7D0000] font-serif-royal mb-2">
-              Admin Authentication Required
+              Admin & Security Authentication
             </h4>
             <p className="text-xs text-amber-950/80 font-medium mb-6">
-              Enter official committee security passcode to manage live streams, tickers & crowd status.
+              Enter official committee credentials to manage live streams, tickers, crowd density, and record VIP Gate Passes.
             </p>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               {loginError && (
-                <div className="p-2.5 rounded-lg bg-red-100 border border-red-400 text-red-800 text-xs font-bold">
-                  {loginError}
+                <div className="p-2.5 rounded-lg bg-red-100 border border-red-400 text-red-800 text-xs font-bold text-left flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-700" />
+                  <span>{loginError}</span>
                 </div>
               )}
 
-              <div>
+              <div className="text-left space-y-1">
+                <label className="block text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-[#B8001F]" />
+                  <span>Username</span>
+                </label>
+                <input
+                  type="text"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  placeholder="e.g. admin or gate_security"
+                  className="w-full bg-white border border-amber-300 rounded-xl px-4 py-2.5 text-sm text-amber-950 focus:outline-none focus:border-[#B8001F] font-medium shadow-xs"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <div className="text-left space-y-1">
+                <label className="block text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-[#B8001F]" />
+                  <span>Password</span>
+                </label>
                 <input
                   type="password"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Enter Admin Passcode (e.g. admin2026)"
-                  className="w-full bg-white border border-amber-300 rounded-xl px-4 py-3 text-sm text-amber-950 focus:outline-none focus:border-[#B8001F] text-center tracking-widest font-bold shadow-xs"
+                  placeholder="Enter password (e.g. admin2026)"
+                  className="w-full bg-white border border-amber-300 rounded-xl px-4 py-2.5 text-sm text-amber-950 focus:outline-none focus:border-[#B8001F] font-medium shadow-xs"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full crimson-button py-3 rounded-xl font-extrabold text-sm shadow-md"
+                disabled={isLoggingIn}
+                className="w-full crimson-button py-3 rounded-xl font-extrabold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
-                Login to Control Portal
+                {isLoggingIn ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#FFD700]" />
+                    <span>Verifying Credentials with Database...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4 text-[#FFD700]" />
+                    <span>Login to Admin Portal</span>
+                  </>
+                )}
               </button>
+
+              <div className="p-3 bg-amber-50/90 rounded-xl border border-amber-200 text-[11px] text-amber-950 text-left space-y-1.5 mt-2">
+                <div className="font-bold text-[#8B0000] flex items-center gap-1">
+                  <Database className="w-3 h-3 text-[#B8001F]" />
+                  <span>Supabase Database Configured Accounts:</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-amber-900">Puja Admin:</span>
+                  <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-300">admin / admin2026</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-amber-900">Gate Security:</span>
+                  <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-300">gate_security / gate2026</span>
+                </div>
+              </div>
             </form>
           </div>
         ) : (
@@ -325,6 +520,18 @@ export const AdminModal: React.FC = () => {
             
             {/* Dashboard Sub-Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 border-b border-amber-200 text-xs font-bold">
+              <button
+                onClick={() => setAdminTab('scanner')}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
+                  adminTab === 'scanner' 
+                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
+                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <QrCode className="w-4 h-4 text-[#FFD700]" />
+                <span>Gate VIP Scanner & Entries ({passScans.length})</span>
+              </button>
+
               <button
                 onClick={() => setAdminTab('stream')}
                 className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
@@ -398,6 +605,18 @@ export const AdminModal: React.FC = () => {
               </button>
 
               <button
+                onClick={() => setAdminTab('translations')}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
+                  adminTab === 'translations' 
+                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
+                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <Languages className="w-4 h-4" />
+                <span>Odia (ଓଡ଼ିଆ) Editor</span>
+              </button>
+
+              <button
                 onClick={() => setAdminTab('analytics')}
                 className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
                   adminTab === 'analytics' 
@@ -409,6 +628,234 @@ export const AdminModal: React.FC = () => {
                 <span>Analytics</span>
               </button>
             </div>
+
+            {/* TAB 0: GATE QR SCANNER & LIVE PASS ENTRIES */}
+            {adminTab === 'scanner' && (
+              <div className="space-y-6">
+                {/* Real-time Metric Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-center shadow-xs">
+                    <div className="text-xl font-black text-[#7D0000]">{passes.length}</div>
+                    <div className="text-[11px] text-amber-950 font-bold mt-0.5">Total Passes Issued</div>
+                  </div>
+                  <div className="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200 text-center shadow-xs">
+                    <div className="text-xl font-black text-emerald-800">
+                      {passScans.filter(s => s.status === 'Entry Granted').length}
+                    </div>
+                    <div className="text-[11px] text-emerald-950 font-bold mt-0.5">Valid Entries Granted</div>
+                  </div>
+                  <div className="bg-blue-50 p-3.5 rounded-xl border border-blue-200 text-center shadow-xs">
+                    <div className="text-xl font-black text-blue-800">{passScans.length}</div>
+                    <div className="text-[11px] text-blue-950 font-bold mt-0.5">Total Scans Logged</div>
+                  </div>
+                  <div className="bg-rose-50 p-3.5 rounded-xl border border-rose-200 text-center shadow-xs">
+                    <div className="text-xl font-black text-rose-800">
+                      {passScans.filter(s => s.status === 'Duplicate Scan').length}
+                    </div>
+                    <div className="text-[11px] text-rose-950 font-bold mt-0.5">Duplicate Attempts</div>
+                  </div>
+                </div>
+
+                {/* Gate Pass Scanner & Manual Entry Input */}
+                <div className="p-4 bg-white rounded-2xl border-2 border-[#D4AF37] shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[#7D0000] font-bold text-sm">
+                      <QrCode className="w-4 h-4 text-[#B8001F]" />
+                      <span>Gate-B Barcode / QR Code Scanner & Entry Logger</span>
+                    </div>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded font-black uppercase">
+                      Supabase DB Live Sync
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-amber-950/70 font-medium">
+                    When visitors present their printed QR pass, security officers can point a barcode reader or paste/enter the Pass ID below to validate and record entrance into Supabase.
+                  </p>
+
+                  {/* Camera Scanner Trigger & Barcode Input */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsCameraScannerOpen(true)}
+                      className="px-4 py-2.5 bg-linear-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-stone-900 font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm border border-amber-300 cursor-pointer shrink-0"
+                    >
+                      <Camera className="w-4 h-4 text-white" />
+                      <span>Scan with Camera</span>
+                    </button>
+
+                    <form onSubmit={handleManualScanSubmit} className="flex-1 flex gap-2">
+                      <input
+                        type="text"
+                        value={manualScanInput}
+                        onChange={(e) => setManualScanInput(e.target.value)}
+                        placeholder="e.g. PASS-636570 or scan QR URL"
+                        className="flex-1 bg-amber-50/70 border border-amber-300 rounded-xl px-4 py-2.5 text-xs text-amber-950 font-mono font-bold focus:outline-none focus:border-[#B8001F]"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isProcessingManualScan || !manualScanInput.trim()}
+                        className="crimson-button px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                      >
+                        {isProcessingManualScan ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FFD700]" />
+                            <span>Validating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#FFD700]" />
+                            <span>Record Entry</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+
+                  {manualScanMsg && (
+                    <div className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border ${manualScanMsg.isError ? 'bg-amber-100 text-amber-900 border-amber-400' : 'bg-emerald-100 text-emerald-900 border-emerald-400'}`}>
+                      {manualScanMsg.isError ? (
+                        <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                      )}
+                      <span>{manualScanMsg.text}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Real-time Gate Scan History Table */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-[#B8001F]" />
+                      <span>Live Gate Entry Logs (pass_scans table in Supabase)</span>
+                    </h4>
+                    <span className="text-[11px] text-amber-900/70 font-semibold">
+                      {passScans.length} total entries
+                    </span>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-amber-200 overflow-hidden shadow-xs">
+                    <div className="overflow-x-auto max-h-[260px] overflow-y-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-amber-100/70 text-amber-950 font-bold border-b border-amber-200 sticky top-0">
+                          <tr>
+                            <th className="p-2.5">Scanned Time</th>
+                            <th className="p-2.5">Pass ID</th>
+                            <th className="p-2.5">Visitor Name</th>
+                            <th className="p-2.5">Category</th>
+                            <th className="p-2.5">Gate</th>
+                            <th className="p-2.5">Status</th>
+                            <th className="p-2.5">Scanned By</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100">
+                          {passScans.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="p-6 text-center text-amber-900/60 font-medium">
+                                No QR scans recorded yet. Point camera at printed VIP Pass to test live logging!
+                              </td>
+                            </tr>
+                          ) : (
+                            passScans.map((scan) => (
+                              <tr key={scan.id} className="hover:bg-amber-50/50">
+                                <td className="p-2.5 font-mono text-[11px] text-amber-900 whitespace-nowrap">
+                                  {scan.scannedAt}
+                                </td>
+                                <td className="p-2.5 font-mono font-bold text-[#8B0000] whitespace-nowrap">
+                                  {scan.passId}
+                                </td>
+                                <td className="p-2.5 font-bold text-amber-950 whitespace-nowrap">
+                                  {scan.fullName}
+                                </td>
+                                <td className="p-2.5 text-amber-800 whitespace-nowrap">
+                                  {scan.passType}
+                                </td>
+                                <td className="p-2.5 text-emerald-800 whitespace-nowrap font-medium">
+                                  {scan.gate}
+                                </td>
+                                <td className="p-2.5 whitespace-nowrap">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${scan.status === 'Entry Granted' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}`}>
+                                    {scan.status}
+                                  </span>
+                                </td>
+                                <td className="p-2.5 text-amber-900/70 text-[11px] whitespace-nowrap">
+                                  {scan.scannedBy}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* All Generated Passes Table with Status */}
+                <div className="space-y-2 pt-2">
+                  <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-1.5">
+                    <Ticket className="w-3.5 h-3.5 text-[#B8001F]" />
+                    <span>Registered Digital VIP Passes (passes table in Supabase)</span>
+                  </h4>
+
+                  <div className="bg-white rounded-xl border border-amber-200 overflow-hidden shadow-xs">
+                    <div className="overflow-x-auto max-h-[220px] overflow-y-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-amber-100/70 text-amber-950 font-bold border-b border-amber-200 sticky top-0">
+                          <tr>
+                            <th className="p-2.5">Pass ID</th>
+                            <th className="p-2.5">Visitor Name</th>
+                            <th className="p-2.5">Category</th>
+                            <th className="p-2.5">Visit Date & Slot</th>
+                            <th className="p-2.5">DB Status</th>
+                            <th className="p-2.5">Scan Count</th>
+                            <th className="p-2.5">Last Scanned</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100">
+                          {passes.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="p-6 text-center text-amber-900/60 font-medium">
+                                No passes generated yet. Generate a pass on the homepage to view it here.
+                              </td>
+                            </tr>
+                          ) : (
+                            passes.map((p) => (
+                              <tr key={p.id} className="hover:bg-amber-50/50">
+                                <td className="p-2.5 font-mono font-bold text-[#8B0000] whitespace-nowrap">
+                                  {p.id}
+                                </td>
+                                <td className="p-2.5 font-bold text-amber-950 whitespace-nowrap">
+                                  {p.fullName}
+                                </td>
+                                <td className="p-2.5 text-amber-800 whitespace-nowrap">
+                                  {p.passType}
+                                </td>
+                                <td className="p-2.5 text-amber-950 whitespace-nowrap">
+                                  {p.visitDate} ({p.timeSlot})
+                                </td>
+                                <td className="p-2.5 whitespace-nowrap">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-black ${p.status === 'Used' ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'}`}>
+                                    {p.status === 'Used' ? 'USED / ENTERED' : 'APPROVED'}
+                                  </span>
+                                </td>
+                                <td className="p-2.5 font-bold text-amber-900 whitespace-nowrap">
+                                  {p.scanCount || 0}
+                                </td>
+                                <td className="p-2.5 font-mono text-[11px] text-amber-900/70 whitespace-nowrap">
+                                  {p.scannedAt || 'Not scanned yet'}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
 
             {/* TAB 1: LIVE STREAM SWITCHER */}
             {adminTab === 'stream' && (
@@ -1093,6 +1540,225 @@ export const AdminModal: React.FC = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* TAB: ODIA (ଓଡ଼ିଆ) TRANSLATION & TEXT EDITOR */}
+            {adminTab === 'translations' && (
+              <div className="space-y-6">
+                
+                {/* Header Banner with Bulk Action */}
+                <div className="p-4 bg-white rounded-2xl border-2 border-[#D4AF37] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-[#7D0000] font-black text-sm">
+                      <Languages className="w-5 h-5 text-[#B8001F]" />
+                      <span>Odia (ଓଡ଼ିଆ) Live Text Editor & Spell Corrector</span>
+                    </div>
+                    <p className="text-xs text-amber-950/70 font-medium max-w-xl">
+                      As an admin, you can correct any improper Odia phrasing or spelling. Saved texts sync live to Supabase DB and immediately reflect on the public website when users view in Odia.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleSaveAllTranslations}
+                      disabled={isBulkSaving || Object.keys(editedTranslations).length === 0}
+                      className="crimson-button px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
+                    >
+                      {isBulkSaving ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FFD700]" />
+                          <span>Saving All...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5 text-[#FFD700]" />
+                          <span>Save All Edits ({Object.keys(editedTranslations).length})</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {bulkSaveSuccess && (
+                  <div className="p-3 bg-emerald-100 border border-emerald-400 text-emerald-900 rounded-xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                    <span>All Odia translations successfully saved to Supabase and applied live!</span>
+                  </div>
+                )}
+
+                {/* Filter and Search Bar */}
+                <div className="bg-amber-50/90 p-4 rounded-xl border border-amber-200 space-y-3 shadow-xs">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {/* Search Input */}
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 text-amber-700 absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        value={translationSearch}
+                        onChange={(e) => setTranslationSearch(e.target.value)}
+                        placeholder="Search phrase by English, Odia, or section..."
+                        className="w-full bg-white border border-amber-300 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-amber-950 focus:outline-none focus:border-[#B8001F]"
+                      />
+                    </div>
+
+                    {/* Section Selector */}
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+                      {[
+                        { id: 'all', label: 'All Sections' },
+                        { id: 'hero', label: 'Hero & Countdown' },
+                        { id: 'header', label: 'Header & Nav' },
+                        { id: 'passes', label: 'Passes & Donations' },
+                        { id: 'map', label: 'Ground Map' },
+                        { id: 'schedule', label: 'Schedule' },
+                        { id: 'heritage', label: 'Heritage' },
+                        { id: 'footer', label: 'Footer' },
+                      ].map((sec) => (
+                        <button
+                          key={sec.id}
+                          type="button"
+                          onClick={() => setTranslationSectionFilter(sec.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                            translationSectionFilter === sec.id
+                              ? 'bg-[#7D0000] text-[#FFD700] shadow-xs'
+                              : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                          }`}
+                        >
+                          {sec.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Translation Items List */}
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                  {filteredTranslations.length === 0 ? (
+                    <div className="p-8 text-center bg-white rounded-xl border border-amber-200 text-amber-900/60 font-medium text-xs">
+                      No translation strings found matching "{translationSearch}". Try another search term.
+                    </div>
+                  ) : (
+                    filteredTranslations.map((item) => {
+                      const currentVal = editedTranslations[item.key] ?? customTranslations[item.key] ?? item.defaultOr;
+                      const isCustomized = Boolean(customTranslations[item.key]);
+                      const isUnsaved = item.key in editedTranslations && editedTranslations[item.key] !== (customTranslations[item.key] ?? item.defaultOr);
+                      const isSaving = isSavingKey === item.key;
+                      const isSavedJustNow = savedKeyNotification === item.key;
+
+                      return (
+                        <div
+                          key={item.key}
+                          className={`p-4 bg-white rounded-xl border transition-all shadow-xs space-y-2.5 ${
+                            isUnsaved ? 'border-[#B8001F] ring-1 ring-[#B8001F]/30 bg-rose-50/20' : 'border-amber-200 hover:border-amber-400'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-[10px] font-black text-[#7D0000] uppercase tracking-wider">
+                                {item.section}
+                              </span>
+                              <span className="text-xs font-bold text-amber-950 font-serif">
+                                {item.label}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {isCustomized && (
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold border border-blue-200">
+                                  Customized
+                                </span>
+                              )}
+                              {isUnsaved && (
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300 animate-pulse">
+                                  Unsaved Edits
+                                </span>
+                              )}
+                              {isSavedJustNow && (
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300 flex items-center gap-1">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  <span>Saved to DB!</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Reference English */}
+                          <div className="bg-amber-50/60 p-2.5 rounded-lg border border-amber-200/60 text-xs text-amber-950 font-sans">
+                            <span className="text-[10px] font-bold text-amber-900/60 block mb-0.5 uppercase tracking-wide">
+                              Original English Reference:
+                            </span>
+                            <span className="font-medium">{item.textEn}</span>
+                          </div>
+
+                          {/* Editable Odia (ଓଡ଼ିଆ) Input */}
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="text-[11px] font-bold text-[#7D0000] flex items-center gap-1">
+                                <span>Odia (ଓଡ଼ିଆ) Proper Text:</span>
+                              </label>
+                              <span className="text-[10px] text-amber-900/60">
+                                Default: <span className="font-serif">{item.defaultOr}</span>
+                              </span>
+                            </div>
+
+                            {item.textEn.length > 60 ? (
+                              <textarea
+                                value={currentVal}
+                                onChange={(e) => handleTranslationTextChange(item.key, e.target.value)}
+                                rows={2}
+                                className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs font-serif font-medium text-amber-950 focus:outline-none focus:border-[#B8001F] shadow-inner"
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                value={currentVal}
+                                onChange={(e) => handleTranslationTextChange(item.key, e.target.value)}
+                                className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs font-serif font-medium text-amber-950 focus:outline-none focus:border-[#B8001F] shadow-inner"
+                              />
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-amber-100">
+                            {isCustomized && (
+                              <button
+                                type="button"
+                                onClick={() => handleResetSingleTranslation(item)}
+                                disabled={isSaving}
+                                className="px-2.5 py-1 text-[11px] font-bold text-amber-800 hover:text-amber-950 hover:bg-amber-100 rounded-lg flex items-center gap-1 border border-amber-200 transition-colors cursor-pointer"
+                                title="Revert to original default Odia phrase"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                                <span>Reset Default</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleSaveSingleTranslation(item)}
+                              disabled={isSaving}
+                              className="crimson-button px-3.5 py-1 text-xs font-bold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                            >
+                              {isSaving ? (
+                                <>
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FFD700]" />
+                                  <span>Saving...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-3.5 h-3.5 text-[#FFD700]" />
+                                  <span>Save (ସାଇତନ୍ତୁ)</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
               </div>
             )}
 

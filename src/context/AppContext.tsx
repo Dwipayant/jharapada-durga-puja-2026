@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { 
   Language, 
   TickerAnnouncement, 
@@ -10,7 +10,9 @@ import type {
   DonationRecord, 
   GalleryMedia, 
   PranamMessage,
-  HistoryStory
+  HistoryStory,
+  AdminUser,
+  PassScanRecord
 } from '../types';
 import { 
   initialTicker, 
@@ -47,8 +49,20 @@ import {
   fetchStallsFromSupabase,
   fetchPranamMessagesFromSupabase,
   insertPranamMessageToSupabase,
-  likePranamMessageInSupabase
+  likePranamMessageInSupabase,
+  authenticateAdminFromSupabase,
+  recordPassScanInSupabase,
+  fetchPassScansFromSupabase,
+  fetchSiteTranslationsFromSupabase,
+  upsertSiteTranslationToSupabase,
+  bulkUpsertSiteTranslationsToSupabase,
+  supabase,
+  isSupabaseConfigured
 } from '../lib/supabase';
+import { 
+  DEFAULT_TRANSLATIONS, 
+  DEFAULT_TRANSLATIONS_MAP 
+} from '../data/translations';
 
 interface AppContextType {
   language: Language;
@@ -58,11 +72,23 @@ interface AppContextType {
   isAudioPlaying: boolean;
   toggleAudio: () => void;
 
-  // Admin state
+  // Admin authentication state
   isAdminLoggedIn: boolean;
   setIsAdminLoggedIn: (status: boolean) => void;
+  adminUser: AdminUser | null;
+  setAdminUser: (user: AdminUser | null) => void;
+  loginAdminWithCredentials: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
+  logoutAdmin: () => void;
   isAdminModalOpen: boolean;
   setIsAdminModalOpen: (open: boolean) => void;
+
+  // Pass Scanning & Gate Entry State
+  passScans: PassScanRecord[];
+  scanPassEntry: (passIdOrValue: string, gate?: string) => Promise<{ success: boolean; pass?: DigitalPass; isDuplicate?: boolean; message: string }>;
+  activeScanResult: { success: boolean; pass?: DigitalPass; isDuplicate?: boolean; message: string } | null;
+  setActiveScanResult: (result: { success: boolean; pass?: DigitalPass; isDuplicate?: boolean; message: string } | null) => void;
+  isCameraScannerOpen: boolean;
+  setIsCameraScannerOpen: (open: boolean) => void;
 
   // Live Stream Landing Modal state
   isLiveModalOpen: boolean;
@@ -116,6 +142,13 @@ interface AppContextType {
 
   // Stalls
   stalls: StallItem[];
+
+  // Dynamic Odia Custom Translations Management
+  customTranslations: Record<string, string>;
+  t: (key: string, defaultEn?: string, defaultOr?: string) => string;
+  updateTranslation: (key: string, newOdiaText: string) => Promise<boolean>;
+  bulkUpdateTranslations: (newMap: Record<string, string>) => Promise<boolean>;
+  resetTranslation: (key: string) => Promise<boolean>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -123,10 +156,34 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('jpuja_admin_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    try {
+      return Boolean(localStorage.getItem('jpuja_admin_user'));
+    } catch {
+      return false;
+    }
+  });
   const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
   const [isLiveModalOpen, setIsLiveModalOpen] = useState<boolean>(true);
   const [openModals, setOpenModals] = useState<Set<string>>(new Set());
+
+  // Pass Scans State
+  const [passScans, setPassScans] = useState<PassScanRecord[]>([]);
+  const [isCameraScannerOpen, setIsCameraScannerOpen] = useState<boolean>(false);
+  const [activeScanResult, setActiveScanResult] = useState<{
+    success: boolean;
+    pass?: DigitalPass;
+    isDuplicate?: boolean;
+    message: string;
+  } | null>(null);
 
   const registerModalOpen = useCallback((id: string, isOpen: boolean) => {
     setOpenModals(prev => {
@@ -171,8 +228,87 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
-  // Fetch initial data for ALL 10 tables from Supabase DB if configured
-  React.useEffect(() => {
+  // Dynamic Odia Custom Translations State
+  const [customTranslations, setCustomTranslations] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem('jpuja_custom_translations_2026');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Helper translation resolver: returns custom Odia translation when language === 'or'
+  const t = useCallback((key: string, defaultEn?: string, defaultOr?: string): string => {
+    const entry = DEFAULT_TRANSLATIONS_MAP[key];
+    const fallbackEn = defaultEn || entry?.textEn || key;
+    const fallbackOr = defaultOr || entry?.defaultOr || fallbackEn;
+
+    if (language === 'or') {
+      return customTranslations[key] || fallbackOr;
+    }
+    return fallbackEn;
+  }, [language, customTranslations]);
+
+  // Update a single Odia translation and sync with Supabase + localStorage
+  const updateTranslation = async (key: string, newOdiaText: string): Promise<boolean> => {
+    const updated = { ...customTranslations, [key]: newOdiaText };
+    setCustomTranslations(updated);
+    try {
+      localStorage.setItem('jpuja_custom_translations_2026', JSON.stringify(updated));
+    } catch (err) {
+      console.warn('LocalStorage save error:', err);
+    }
+    const item = DEFAULT_TRANSLATIONS.find(tr => tr.key === key);
+    return await upsertSiteTranslationToSupabase(
+      key,
+      item?.section || 'general',
+      item?.textEn || key,
+      newOdiaText
+    );
+  };
+
+  // Bulk update multiple Odia translations
+  const bulkUpdateTranslations = async (newMap: Record<string, string>): Promise<boolean> => {
+    const updated = { ...customTranslations, ...newMap };
+    setCustomTranslations(updated);
+    try {
+      localStorage.setItem('jpuja_custom_translations_2026', JSON.stringify(updated));
+    } catch (err) {
+      console.warn('LocalStorage save error:', err);
+    }
+    const payload = Object.entries(newMap).map(([k, val]) => {
+      const item = DEFAULT_TRANSLATIONS.find(tr => tr.key === k);
+      return {
+        key: k,
+        section: item?.section || 'general',
+        textEn: item?.textEn || k,
+        textOr: val
+      };
+    });
+    return await bulkUpsertSiteTranslationsToSupabase(payload);
+  };
+
+  // Reset a translation back to original default
+  const resetTranslation = async (key: string): Promise<boolean> => {
+    const item = DEFAULT_TRANSLATIONS.find(tr => tr.key === key);
+    const defaultOr = item?.defaultOr || '';
+    const updated = { ...customTranslations };
+    delete updated[key];
+    setCustomTranslations(updated);
+    try {
+      localStorage.setItem('jpuja_custom_translations_2026', JSON.stringify(updated));
+    } catch (err) {
+      console.warn('LocalStorage remove error:', err);
+    }
+    if (item) {
+      await upsertSiteTranslationToSupabase(key, item.section, item.textEn, defaultOr);
+    }
+    return true;
+  };
+
+  // Fetch initial data from Supabase DB and setup Realtime synchronization
+  useEffect(() => {
     const loadSupabaseData = async () => {
       const dbTickers = await fetchTickersFromSupabase();
       if (dbTickers && dbTickers.length > 0) setTickers(dbTickers);
@@ -198,14 +334,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const dbPasses = await fetchPassesFromSupabase();
       if (dbPasses) setPasses(dbPasses);
 
+      const dbScans = await fetchPassScansFromSupabase();
+      if (dbScans) setPassScans(dbScans);
+
       const dbDonations = await fetchDonationsFromSupabase();
       if (dbDonations) setDonations(dbDonations);
 
       const dbPranam = await fetchPranamMessagesFromSupabase();
       if (dbPranam && dbPranam.length > 0) setPranamMessages(dbPranam);
+
+      const dbTranslations = await fetchSiteTranslationsFromSupabase();
+      if (dbTranslations) {
+        setCustomTranslations(prev => ({ ...prev, ...dbTranslations }));
+      }
     };
+
     loadSupabaseData();
+
+    // Setup Supabase Realtime WebSocket Channels + Polling Fallback
+    let realtimeChannel: any = null;
+    let pollTimer: any = null;
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        realtimeChannel = supabase
+          .channel('jpuja-live-sync')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'site_translations' },
+            async () => {
+              const updatedTranslations = await fetchSiteTranslationsFromSupabase();
+              if (updatedTranslations) {
+                setCustomTranslations(prev => ({ ...prev, ...updatedTranslations }));
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'pass_scans' },
+            async () => {
+              const updatedScans = await fetchPassScansFromSupabase();
+              if (updatedScans) setPassScans(updatedScans);
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'passes' },
+            async () => {
+              const updatedPasses = await fetchPassesFromSupabase();
+              if (updatedPasses) setPasses(updatedPasses);
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'crowd_status' },
+            async () => {
+              const dbCrowd = await fetchCrowdStatusFromSupabase();
+              if (dbCrowd) setCrowdStatus(dbCrowd);
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'announcements' },
+            async () => {
+              const dbTickers = await fetchTickersFromSupabase();
+              if (dbTickers && dbTickers.length > 0) setTickers(dbTickers);
+            }
+          )
+          .subscribe();
+      } catch (err) {
+        console.warn('Realtime subscription error:', err);
+      }
+
+      // 4-second Polling Fallback ensures instant sync across separate devices even if Supabase Realtime replication is disabled
+      pollTimer = setInterval(async () => {
+        try {
+          const updatedScans = await fetchPassScansFromSupabase();
+          if (updatedScans) setPassScans(updatedScans);
+          const updatedPasses = await fetchPassesFromSupabase();
+          if (updatedPasses) setPasses(updatedPasses);
+        } catch {
+          // silent fail
+        }
+      }, 4000);
+    }
+
+    return () => {
+      if (realtimeChannel && supabase) {
+        supabase.removeChannel(realtimeChannel);
+      }
+      if (pollTimer) {
+        clearInterval(pollTimer);
+      }
+    };
   }, []);
+
 
   // Save gallery to localStorage on update
   React.useEffect(() => {
@@ -217,13 +440,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [gallery]);
 
   // Save history stories to localStorage on update
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       localStorage.setItem('jpuja_history_stories_2026', JSON.stringify(historyStories));
     } catch (err) {
       console.warn('Failed to persist history stories to localStorage:', err);
     }
   }, [historyStories]);
+
+  // Admin Authentication with Username and Password
+  const loginAdminWithCredentials = async (usernameInput: string, passwordInput: string) => {
+    const res = await authenticateAdminFromSupabase(usernameInput, passwordInput);
+    if (res.success && res.user) {
+      setAdminUser(res.user);
+      setIsAdminLoggedIn(true);
+      try {
+        localStorage.setItem('jpuja_admin_user', JSON.stringify(res.user));
+      } catch (err) {
+        console.warn('LocalStorage save error:', err);
+      }
+      return { success: true, message: res.message };
+    }
+    return { success: false, message: res.message };
+  };
+
+  const logoutAdmin = () => {
+    setAdminUser(null);
+    setIsAdminLoggedIn(false);
+    try {
+      localStorage.removeItem('jpuja_admin_user');
+    } catch (err) {
+      console.warn('LocalStorage remove error:', err);
+    }
+  };
+
+  // Record a Gate Entry when QR code is scanned
+  const scanPassEntry = async (passIdOrValue: string, gate: string = 'Gate-B (Jharapada Jail Side)') => {
+    const scannerName = adminUser ? `${adminUser.fullName} (${adminUser.username})` : 'Gate QR Scanner';
+    const res = await recordPassScanInSupabase(passIdOrValue, gate, scannerName);
+
+    // Update passes in memory
+    if (res.pass) {
+      setPasses(prev => prev.map(p => p.id === res.pass?.id ? { 
+        ...p, 
+        status: 'Used', 
+        scannedAt: res.pass?.scannedAt, 
+        scanCount: res.pass?.scanCount 
+      } : p));
+    }
+
+    // Refresh pass scans list
+    const updatedScans = await fetchPassScansFromSupabase();
+    if (updatedScans) {
+      setPassScans(updatedScans);
+    } else {
+      const newScan: PassScanRecord = {
+        id: 'scan-' + Date.now(),
+        passId: res.pass?.id || passIdOrValue,
+        fullName: res.pass?.fullName || 'VIP Visitor',
+        passType: res.pass?.passType || 'VIP Guest',
+        gate,
+        status: res.isDuplicate ? 'Duplicate Scan' : 'Entry Granted',
+        scannedBy: scannerName,
+        scannedAt: new Date().toLocaleTimeString()
+      };
+      setPassScans(prev => [newScan, ...prev]);
+    }
+
+    return res;
+  };
+
+  // Listen for ?scan_pass=... in URL (triggered when user/security scans QR code on printed paper)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const scanPassId = params.get('scan_pass');
+      if (scanPassId) {
+        scanPassEntry(scanPassId).then(res => {
+          setActiveScanResult(res);
+          // Clean up URL parameter cleanly without page reload
+          const cleanUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, cleanUrl);
+        });
+      }
+    }
+  }, []);
 
   // Audio synthesizer / ambient toggle
   const toggleAudio = () => {
@@ -297,13 +598,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  // Create Pass
+  // Create Pass with verifiable URL in QR code
   const createPass = (passData: Omit<DigitalPass, 'id' | 'qrCodeValue' | 'status' | 'createdAt'>): DigitalPass => {
     const id = 'PASS-' + Math.floor(100000 + Math.random() * 900000);
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    // Embed the live verification link directly in the QR code!
+    const qrUrl = `${origin}?scan_pass=${id}`;
+    
     const newPass: DigitalPass = {
       ...passData,
       id,
-      qrCodeValue: `JHARAPADA-PUJA-2026|PASS:${id}|NAME:${passData.fullName}|TYPE:${passData.passType}`,
+      qrCodeValue: qrUrl,
       status: 'Approved',
       createdAt: new Date().toLocaleString()
     };
@@ -394,8 +699,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toggleAudio,
       isAdminLoggedIn,
       setIsAdminLoggedIn,
+      adminUser,
+      setAdminUser,
+      loginAdminWithCredentials,
+      logoutAdmin,
       isAdminModalOpen,
       setIsAdminModalOpen,
+      passScans,
+      scanPassEntry,
+      activeScanResult,
+      setActiveScanResult,
+      isCameraScannerOpen,
+      setIsCameraScannerOpen,
       isLiveModalOpen,
       setIsLiveModalOpen,
       isAnyModalOpen,
@@ -424,7 +739,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       pranamMessages,
       addPranamMessage,
       likePranamMessage,
-      stalls
+      stalls,
+      customTranslations,
+      t,
+      updateTranslation,
+      bulkUpdateTranslations,
+      resetTranslation
     }}>
       {children}
     </AppContext.Provider>
