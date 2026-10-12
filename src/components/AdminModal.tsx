@@ -120,8 +120,11 @@ export const AdminModal: React.FC = () => {
   // Media upload form state
   const [uploadTitleEn, setUploadTitleEn] = useState('');
   const [uploadTitleOr, setUploadTitleOr] = useState('');
+  const [uploadType, setUploadType] = useState<'image' | 'video'>('image');
+  const [uploadYear, setUploadYear] = useState<number>(2026);
   const [uploadCategory, setUploadCategory] = useState<'pandal' | 'idol' | 'lights' | 'celebrities' | 'bhasani'>('pandal');
   const [uploadUrl, setUploadUrl] = useState('');
+  const [uploadThumbnailUrl, setUploadThumbnailUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -277,13 +280,15 @@ export const AdminModal: React.FC = () => {
       titleEn: uploadTitleEn,
       titleOr: uploadTitleOr || uploadTitleEn,
       category: uploadCategory,
-      year: 2026,
-      type: 'image',
-      url: uploadUrl
+      year: Number(uploadYear) || 2026,
+      type: uploadType,
+      url: uploadUrl,
+      thumbnailUrl: uploadType === 'video' ? (uploadThumbnailUrl || uploadUrl) : undefined
     });
     setUploadTitleEn('');
     setUploadTitleOr('');
     setUploadUrl('');
+    setUploadThumbnailUrl('');
     setSelectedFileName('');
     setUploadSuccess(true);
     setTimeout(() => setUploadSuccess(false), 3500);
@@ -1259,7 +1264,51 @@ export const AdminModal: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-amber-950 mb-1">Media Type</label>
+                      <select
+                        value={uploadType}
+                        onChange={(e) => setUploadType(e.target.value as any)}
+                        className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-bold focus:outline-none focus:border-[#B8001F]"
+                      >
+                        <option value="image">📷 Photo / Image</option>
+                        <option value="video">🎬 Video (YouTube / MP4)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-950 mb-1">Festival Year</label>
+                      <select
+                        value={uploadYear}
+                        onChange={(e) => setUploadYear(Number(e.target.value))}
+                        className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-bold focus:outline-none focus:border-[#B8001F]"
+                      >
+                        <option value={2026}>2026 (50th Golden Jubilee)</option>
+                        <option value={2025}>2025</option>
+                        <option value={2024}>2024</option>
+                        <option value={2023}>2023</option>
+                        <option value={2022}>2022</option>
+                        <option value={2021}>2021</option>
+                        <option value={2020}>2020</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-950 mb-1">Gallery Category</label>
+                      <select
+                        value={uploadCategory}
+                        onChange={(e) => setUploadCategory(e.target.value as any)}
+                        className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                      >
+                        <option value="pandal">Pandal Architecture</option>
+                        <option value="idol">Idol Sanctum</option>
+                        <option value="lights">Lights & Illuminations</option>
+                        <option value="celebrities">VIP / Stage</option>
+                        <option value="bhasani">Bhasani Procession</option>
+                      </select>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-bold text-amber-950 mb-1">Media Title (English)</label>
                       <input
@@ -1284,30 +1333,32 @@ export const AdminModal: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-amber-950 mb-1">Gallery Category</label>
-                      <select
-                        value={uploadCategory}
-                        onChange={(e) => setUploadCategory(e.target.value as any)}
-                        className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
-                      >
-                        <option value="pandal">Pandal Architecture</option>
-                        <option value="idol">Idol Sanctum</option>
-                        <option value="lights">Lights & Illuminations</option>
-                        <option value="celebrities">VIP / Stage</option>
-                        <option value="bhasani">Bhasani Procession</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-amber-950 mb-1">Or Enter Direct Image / Media URL</label>
+                      <label className="block text-xs font-bold text-amber-950 mb-1">
+                        {uploadType === 'video' ? 'Video URL (YouTube or MP4)' : 'Or Enter Direct Image URL'}
+                      </label>
                       <input
                         type="text"
                         value={uploadUrl}
                         onChange={(e) => setUploadUrl(e.target.value)}
-                        placeholder="https://images.unsplash.com/..."
+                        placeholder={uploadType === 'video' ? 'https://www.youtube.com/watch?v=...' : 'https://images.unsplash.com/...'}
                         className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
                       />
                     </div>
+
+                    {uploadType === 'video' && (
+                      <div className="lg:col-span-3">
+                        <label className="block text-xs font-bold text-amber-950 mb-1">
+                          Video Thumbnail Image URL (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={uploadThumbnailUrl}
+                          onChange={(e) => setUploadThumbnailUrl(e.target.value)}
+                          placeholder="https://images.unsplash.com/... (used as video preview poster)"
+                          className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -1315,7 +1366,7 @@ export const AdminModal: React.FC = () => {
                     className="crimson-button py-3 px-6 rounded-xl font-bold text-xs shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto text-white"
                   >
                     <Upload className="w-4 h-4 text-white" />
-                    <span>Publish File to Live Website Gallery</span>
+                    <span>Publish {uploadType === 'video' ? 'Video' : 'Photo'} to Live Website Gallery</span>
                   </button>
                 </form>
 
@@ -1337,13 +1388,20 @@ export const AdminModal: React.FC = () => {
                       >
                         <div className="flex items-center gap-2.5 overflow-hidden">
                           <div className="w-12 h-12 rounded-lg bg-amber-50 overflow-hidden border border-amber-200 shrink-0">
-                            <img src={g.url} alt={g.titleEn} className="w-full h-full object-cover" />
+                            <img src={g.thumbnailUrl || g.url} alt={g.titleEn} className="w-full h-full object-cover" />
                           </div>
                           <div className="truncate text-xs">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${
+                                g.type === 'video' ? 'bg-purple-700 text-white' : 'bg-blue-600 text-white'
+                              }`}>
+                                {g.type === 'video' ? '🎬 VIDEO' : '📷 PHOTO'}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-[#B8001F] text-[#FFD700] text-[9px] font-black">{g.year}</span>
+                            </div>
                             <h5 className="font-bold text-amber-950 truncate">{g.titleEn}</h5>
                             <div className="flex items-center gap-2 text-[10px] text-amber-900/70 font-medium mt-0.5">
-                              <span className="px-1.5 py-0.2 rounded bg-[#7D0000] text-[#FFD700] uppercase font-bold text-[9px]">{g.category}</span>
-                              <span>{g.year}</span>
+                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 uppercase font-bold text-[9px]">{g.category}</span>
                             </div>
                           </div>
                         </div>

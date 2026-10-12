@@ -246,6 +246,7 @@ export const initialStalls: StallItem[] = [
 ];
 
 export const initialGallery: GalleryMedia[] = [
+  // --- 2026 PHOTOS ---
   {
     id: 'g-1',
     titleEn: 'Bauda Garh Fort Theme Illumination 2026',
@@ -257,8 +258,8 @@ export const initialGallery: GalleryMedia[] = [
   },
   {
     id: 'g-2',
-    titleEn: 'Golden Silver Durga Idol Sanctum',
-    titleOr: 'ମା\' ଦୁର୍ଗାଙ୍କ ସୁନା ଚାନ୍ଦି ମେଢ଼',
+    titleEn: 'Golden Silver Durga Idol Sanctum 2026',
+    titleOr: 'ମା\' ଦୁର୍ଗାଙ୍କ ସୁନା ଚାନ୍ଦି ମେଢ଼ ୨୦୨୬',
     category: 'idol',
     year: 2026,
     type: 'image',
@@ -266,17 +267,50 @@ export const initialGallery: GalleryMedia[] = [
   },
   {
     id: 'g-3',
-    titleEn: 'Meena Bazaar Lights & Crowd Extravaganza',
-    titleOr: 'ମୀନା ବଜାର ଜନସମୁଦ୍ର',
+    titleEn: 'Meena Bazaar Carnival & Giant Ferris Wheel 2026',
+    titleOr: 'ମୀନା ବଜାର ଜନସମୁଦ୍ର ଓ ନାଗରଦୋଳା ୨୦୨୬',
     category: 'lights',
     year: 2026,
     type: 'image',
     url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    id: 'g-3b',
+    titleEn: 'LED Dynamic Illumination Archway 2026',
+    titleOr: 'ଆଲୋକିତ ପ୍ରବେଶ ତୋରଣ ୨୦୨୬',
+    category: 'lights',
+    year: 2026,
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80',
+  },
+
+  // --- 2026 VIDEOS ---
+  {
+    id: 'v-1',
+    titleEn: 'Bauda Garh Fort Grand 3D Projection & Laser Show 4K',
+    titleOr: 'ବାଉଡ଼ ଗଡ଼ ତୋରଣ ୩D ଲେଜର ଶୋ\' ସିଧାପ୍ରସାରଣ',
+    category: 'pandal',
+    year: 2026,
+    type: 'video',
+    url: 'https://www.youtube.com/watch?v=3JZ_D3ELwOQ',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'v-2',
+    titleEn: 'Maha Ashtami 108 Lamps Sandhi Puja Live Aarti Ceremony',
+    titleOr: 'ମହା ଅଷ୍ଟମୀ ୧୦୮ ଦୀପ ସନ୍ଧି ପୂଜା ମହା ଆରତୀ',
+    category: 'idol',
+    year: 2026,
+    type: 'video',
+    url: 'https://www.youtube.com/watch?v=21X5lGlDOfg',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=800&q=80',
+  },
+
+  // --- 2025 PHOTOS ---
+  {
     id: 'g-4',
-    titleEn: 'Sandhya Aarti & 108 Lamps Ceremony',
-    titleOr: '୧୦୮ ଦୀପ ସନ୍ଧ୍ୟା ଆରତୀ',
+    titleEn: 'Maha Ashtami 108 Lotuses Sandhi Puja 2025',
+    titleOr: '୧୦୮ ପଦ୍ମ ସନ୍ଧି ପୂଜା ୨୦୨୫',
     category: 'idol',
     year: 2025,
     type: 'image',
@@ -284,8 +318,8 @@ export const initialGallery: GalleryMedia[] = [
   },
   {
     id: 'g-5',
-    titleEn: 'Bhasani Procession Light Gates',
-    titleOr: 'ଭାସାଣି ଶୋଭାଯାତ୍ରା ଆଲୋକ ତୋରଣ',
+    titleEn: 'Bhasani Procession Royal Torana & Firework Displays 2025',
+    titleOr: 'ଭାସାଣି ଶୋଭାଯାତ୍ରା ଓ ଆତସବାଜି ୨୦୨୫',
     category: 'bhasani',
     year: 2025,
     type: 'image',
@@ -293,12 +327,87 @@ export const initialGallery: GalleryMedia[] = [
   },
   {
     id: 'g-6',
-    titleEn: 'Celebrity Visit & Stage Performance',
-    titleOr: 'ସାଂସ୍କୃତିକ ମଞ୍ଚ କାର୍ଯ୍ୟକ୍ରମ',
+    titleEn: 'Celebrity Musical Night & Cultural Stage 2025',
+    titleOr: 'ତାରକା ସଙ୍ଗୀତ ସନ୍ଧ୍ୟା ୨୦୨୫',
     category: 'celebrities',
     year: 2025,
     type: 'image',
     url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80',
+  },
+
+  // --- 2025 VIDEOS ---
+  {
+    id: 'v-3',
+    titleEn: 'Grand Bhasani Utsav & Melana Padia Fireworks 2025',
+    titleOr: 'ଭାସାଣି ମେଳଣ ଓ ଆତସବାଜି ପ୍ରଦର୍ଶନ ୨୦୨୫',
+    category: 'bhasani',
+    year: 2025,
+    type: 'video',
+    url: 'https://www.youtube.com/watch?v=9bZkp7q19f0',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'v-4',
+    titleEn: 'Melody Night Celebrity Live Concert Highlights 2025',
+    titleOr: 'ମେଲୋଡ଼ି ନାଇଟ୍ ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ ୨୦୨୫',
+    category: 'celebrities',
+    year: 2025,
+    type: 'video',
+    url: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80',
+  },
+
+  // --- 2024 PHOTOS ---
+  {
+    id: 'g-7',
+    titleEn: 'Mysore Palace Themed Grand Gate 2024',
+    titleOr: 'ମହୀଶୂର ରାଜପ୍ରାସାଦ ତୋରଣ ୨୦୨୪',
+    category: 'pandal',
+    year: 2024,
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1599818491741-94943f5509df?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'g-8',
+    titleEn: 'Traditional Dhunuchi Dance & Devotees 2024',
+    titleOr: 'ଧୁନୁଚି ନୃତ୍ୟ ଓ ଭକ୍ତ ସମାବେଶ ୨୦୨୪',
+    category: 'idol',
+    year: 2024,
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=1200&q=80',
+  },
+
+  // --- 2024 VIDEOS ---
+  {
+    id: 'v-5',
+    titleEn: 'Full Pandal Drone Walkthrough & Lighting Architecture 2024',
+    titleOr: 'ଡ୍ରୋନ୍ କ୍ୟାମେରା ମାଧ୍ୟମରେ ମଣ୍ଡପ ଭ୍ରମଣ ୨୦୨୪',
+    category: 'pandal',
+    year: 2024,
+    type: 'video',
+    url: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1599818491741-94943f5509df?auto=format&fit=crop&w=800&q=80',
+  },
+
+  // --- 2023 PHOTOS & VIDEOS ---
+  {
+    id: 'g-9',
+    titleEn: 'Golden Jubilee Temple Pandal Heritage 2023',
+    titleOr: 'ସୁବର୍ଣ୍ଣ ମନ୍ଦିର ତୋରଣ ୨୦୨୩',
+    category: 'pandal',
+    year: 2023,
+    type: 'image',
+    url: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    id: 'v-6',
+    titleEn: 'Vijayadasami Ravan Podi Fire Extravaganza 2023',
+    titleOr: 'ବିଜୟାଦଶମୀ ରାବଣ ପୋଡ଼ି ଉତ୍ସବ ୨୦୨୩',
+    category: 'bhasani',
+    year: 2023,
+    type: 'video',
+    url: 'https://www.youtube.com/watch?v=JGwWNGJdvx8',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
   }
 ];
 

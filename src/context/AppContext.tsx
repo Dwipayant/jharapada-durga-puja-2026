@@ -213,7 +213,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [gallery, setGallery] = useState<GalleryMedia[]>(() => {
     try {
       const saved = localStorage.getItem('jpuja_gallery_2026');
-      return saved ? JSON.parse(saved) : initialGallery;
+      if (saved) {
+        const parsed: GalleryMedia[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(p => p.id));
+        const missingInitial = initialGallery.filter(item => !existingIds.has(item.id));
+        return missingInitial.length > 0 ? [...parsed, ...missingInitial] : parsed;
+      }
+      return initialGallery;
     } catch {
       return initialGallery;
     }
