@@ -96,7 +96,7 @@ export const Hero: React.FC = () => {
             className="px-6 py-3.5 rounded-xl bg-white hover:bg-amber-50 text-amber-950 border border-amber-300 flex items-center gap-2 text-base font-bold transition-all shadow-md"
           >
             <MapPin className="w-5 h-5 text-[#B8001F]" />
-            <span>{language === 'en' ? 'Melan Padia Map' : 'ମାନଚିତ୍ର'}</span>
+            <span>{language === 'en' ? 'Map' : 'ମାନଚିତ୍ର'}</span>
           </a>
 
           <a

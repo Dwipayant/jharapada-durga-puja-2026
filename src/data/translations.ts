@@ -25,8 +25,8 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
   {
     key: 'header_nav_map',
     section: 'header',
-    label: 'Navigation: Ground Map',
-    textEn: 'Ground Map',
+    label: 'Navigation: Map',
+    textEn: 'Map',
     defaultOr: 'ମଣ୍ଡପ ମାନଚିତ୍ର'
   },
   {

@@ -71,7 +71,7 @@ export const Header: React.FC = () => {
       )}
 
       {/* Main Navigation Bar */}
-      <div className="max-w-[98%] 2xl:max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-2 xl:gap-4">
 
           {/* Brand Logo & Name */}
@@ -102,15 +102,15 @@ export const Header: React.FC = () => {
           </a>
 
           {/* Center Navigation Links (Desktop) */}
-          <nav className="hidden xl:flex items-center space-x-3 2xl:space-x-5 text-xs 2xl:text-sm font-bold text-gray-800 shrink-0">
-            <a href="#schedule" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+          <nav className="hidden xl:flex items-center gap-1.5 2xl:gap-3 text-xs 2xl:text-sm font-semibold 2xl:font-bold text-gray-800 shrink-0">
+            <a href="#schedule" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
               <Calendar className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'Rituals & Shows' : 'ପୂଜା ନୀତି କାନ୍ତି'}</span>
             </a>
 
             <button
               onClick={() => setIsLiveModalOpen(true)}
-              className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0"
             >
               <Tv className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'Live Darshan' : 'ଲାଇଭ୍ ଦର୍ଶନ'}</span>
@@ -120,29 +120,29 @@ export const Header: React.FC = () => {
               </span>
             </button>
 
-            <a href="#passes-donations" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+            <a href="#passes-donations" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
               <Ticket className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'VIP Pass & Donate' : 'ଇ-ପାସ୍ ଓ ଦାନ'}</span>
             </a>
 
-            <a href="#heritage" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+            <a href="#heritage" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
               <Sparkles className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'History' : 'ଐତିହ୍ୟ'}</span>
             </a>
 
-            <a href="#gallery" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+            <a href="#gallery" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
               <Camera className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'Gallery & 360' : 'ଗ୍ୟାଲେରୀ'}</span>
             </a>
 
-            <a href="#ground-map" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+            <a href="#ground-map" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
               <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Melan Padia Map' : 'ମଣ୍ଡପ ମାନଚିତ୍ର'}</span>
+              <span className="whitespace-nowrap">{language === 'en' ? 'Map' : 'ମାନଚିତ୍ର'}</span>
             </a>
           </nav>
 
           {/* Right Action Tools */}
-          <div className="hidden lg:flex items-center gap-2 2xl:gap-3 shrink-0">
+          <div className="hidden xl:flex items-center gap-2 2xl:gap-3 shrink-0">
             {/* Language Switcher Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'or' : 'en')}
@@ -252,7 +252,7 @@ export const Header: React.FC = () => {
               className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
             >
               <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Ground Map' : 'ମାନଚିତ୍ର'}</span>
+              <span className="whitespace-nowrap">{language === 'en' ? 'Map' : 'ମାନଚିତ୍ର'}</span>
             </a>
           </div>
         </div>
