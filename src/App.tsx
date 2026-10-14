@@ -25,10 +25,10 @@ export function AppContent() {
         <Hero />
         <Schedule />
         <LiveDarshan />
-        <MelanMap />
         <PassesAndDonation />
         <HeritageStory />
         <GalleryAndVR />
+        <MelanMap />
       </main>
       <Footer />
       <AdminModal />

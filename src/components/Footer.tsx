@@ -41,12 +41,13 @@ export const Footer: React.FC = () => {
               {language === 'en' ? 'Quick Navigation' : 'ମୁଖ୍ୟ ଲିଙ୍କ୍'}
             </h4>
             <ul className="space-y-2 text-amber-950/80 font-medium">
-              <li><a href="#live-darshan" className="hover:text-[#B8001F]">Live 4K HD Darshan</a></li>
-              <li><a href="#ground-map" className="hover:text-[#B8001F]">Interactive Ground Map</a></li>
               <li><a href="#schedule" className="hover:text-[#B8001F]">Rituals & Cultural Timings</a></li>
+              <li><a href="#live-darshan" className="hover:text-[#B8001F]">Live 4K HD Darshan</a></li>
               <li><a href="#passes-donations" className="hover:text-[#B8001F]">Senior Citizen VIP Pass</a></li>
               <li><a href="#passes-donations" className="hover:text-[#B8001F]">80G Tax Exemption Donation</a></li>
               <li><a href="#heritage" className="hover:text-[#B8001F]">Bauda Garh Fort History</a></li>
+              <li><a href="#gallery" className="hover:text-[#B8001F]">Photos & 360 Virtual Tour</a></li>
+              <li><a href="#ground-map" className="hover:text-[#B8001F]">Interactive Ground Map</a></li>
             </ul>
           </div>
 

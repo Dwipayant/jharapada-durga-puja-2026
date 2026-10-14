@@ -11,7 +11,7 @@ export const FloatingNav: React.FC = () => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
 
-      const sections = ['schedule', 'live-darshan', 'ground-map', 'passes-donations', 'heritage', 'gallery'];
+      const sections = ['schedule', 'live-darshan', 'passes-donations', 'heritage', 'gallery', 'ground-map'];
       const scrollPosition = window.scrollY + 250;
 
       for (const sectionId of sections) {
@@ -60,13 +60,6 @@ export const FloatingNav: React.FC = () => {
       isLive: true
     },
     {
-      id: 'ground-map',
-      labelEn: 'Map',
-      labelOr: 'ମାନଚିତ୍ର',
-      icon: MapPin,
-      href: '#ground-map'
-    },
-    {
       id: 'passes-donations',
       labelEn: 'Pass & Donate',
       labelOr: 'ପାସ୍/ଦାନ',
@@ -86,6 +79,13 @@ export const FloatingNav: React.FC = () => {
       labelOr: 'ଗ୍ୟାଲେରୀ',
       icon: Image,
       href: '#gallery'
+    },
+    {
+      id: 'ground-map',
+      labelEn: 'Map',
+      labelOr: 'ମାନଚିତ୍ର',
+      icon: MapPin,
+      href: '#ground-map'
     }
   ];
 

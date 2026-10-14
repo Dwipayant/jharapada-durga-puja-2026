@@ -12,7 +12,8 @@ import {
   X,
   Sparkles,
   Radio,
-  Clock
+  Clock,
+  Camera
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -119,11 +120,6 @@ export const Header: React.FC = () => {
               </span>
             </button>
 
-            <a href="#ground-map" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
-              <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Melan Padia Map' : 'ମଣ୍ଡପ ମାନଚିତ୍ର'}</span>
-            </a>
-
             <a href="#passes-donations" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
               <Ticket className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'VIP Pass & Donate' : 'ଇ-ପାସ୍ ଓ ଦାନ'}</span>
@@ -132,6 +128,16 @@ export const Header: React.FC = () => {
             <a href="#heritage" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
               <Sparkles className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'History' : 'ଐତିହ୍ୟ'}</span>
+            </a>
+
+            <a href="#gallery" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+              <Camera className="w-4 h-4 text-[#B8001F] shrink-0" />
+              <span className="whitespace-nowrap">{language === 'en' ? 'Gallery & 360' : 'ଗ୍ୟାଲେରୀ'}</span>
+            </a>
+
+            <a href="#ground-map" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+              <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
+              <span className="whitespace-nowrap">{language === 'en' ? 'Melan Padia Map' : 'ମଣ୍ଡପ ମାନଚିତ୍ର'}</span>
             </a>
           </nav>
 
@@ -217,14 +223,6 @@ export const Header: React.FC = () => {
               <span className="whitespace-nowrap">{language === 'en' ? 'Live Darshan' : 'ଲାଇଭ୍ ଦର୍ଶନ'}</span>
             </a>
             <a
-              href="#ground-map"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
-            >
-              <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Ground Map' : 'ମାନଚିତ୍ର'}</span>
-            </a>
-            <a
               href="#passes-donations"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
@@ -235,10 +233,26 @@ export const Header: React.FC = () => {
             <a
               href="#heritage"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 col-span-2 whitespace-nowrap"
+              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
             >
               <Sparkles className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Bauda Garh Fort History' : 'ଐତିହ୍ୟ ବାଉଡ଼ ଗଡ଼'}</span>
+              <span className="whitespace-nowrap">{language === 'en' ? 'History' : 'ଐତିହ୍ୟ'}</span>
+            </a>
+            <a
+              href="#gallery"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
+            >
+              <Camera className="w-4 h-4 text-[#B8001F] shrink-0" />
+              <span className="whitespace-nowrap">{language === 'en' ? 'Gallery & 360' : 'ଗ୍ୟାଲେରୀ'}</span>
+            </a>
+            <a
+              href="#ground-map"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
+            >
+              <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
+              <span className="whitespace-nowrap">{language === 'en' ? 'Ground Map' : 'ମାନଚିତ୍ର'}</span>
             </a>
           </div>
         </div>
