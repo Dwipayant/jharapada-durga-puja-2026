@@ -45,7 +45,7 @@ export const Hero: React.FC = () => {
       <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-rose-200/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        
+
         {/* Top Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/90 border border-amber-300 shadow-md mb-6 animate-bounce">
           <Sparkles className="w-4 h-4 text-[#B8001F]" />
@@ -61,7 +61,7 @@ export const Hero: React.FC = () => {
             {t('hero_main_title', 'Jharapada Durga Puja 2026', 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ୨୦୨୬')}
           </span>
           <span className="block text-2xl sm:text-4xl lg:text-5xl text-amber-950 font-sans font-black mt-2">
-            {t('hero_subtitle', 'Historic Bauda Garh Fort Theme & Gold Sanctum', 'ଐତିହାସିକ ବାଉଡ଼ ଗଡ଼ ତୋରଣ ଓ ସୁନା ଚାନ୍ଦି ମେଢ଼')}
+            {t('hero_subtitle', 'Historic Baudha Garh Fort Theme & Gold Sanctum', 'ଐତିହାସିକ ବାଉଡ଼ ଗଡ଼ ତୋରଣ ଓ ସୁନା ଚାନ୍ଦି ମେଢ଼')}
           </span>
         </h1>
 

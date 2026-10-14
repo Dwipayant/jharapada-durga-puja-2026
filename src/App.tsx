@@ -23,9 +23,9 @@ export function AppContent() {
       <Header />
       <main className="flex-1">
         <Hero />
+        <Schedule />
         <LiveDarshan />
         <MelanMap />
-        <Schedule />
         <PassesAndDonation />
         <HeritageStory />
         <GalleryAndVR />

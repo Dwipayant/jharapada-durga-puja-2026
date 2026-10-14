@@ -102,6 +102,11 @@ export const Header: React.FC = () => {
 
           {/* Center Navigation Links (Desktop) */}
           <nav className="hidden xl:flex items-center space-x-3 2xl:space-x-5 text-xs 2xl:text-sm font-bold text-gray-800 shrink-0">
+            <a href="#schedule" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
+              <Calendar className="w-4 h-4 text-[#B8001F] shrink-0" />
+              <span className="whitespace-nowrap">{language === 'en' ? 'Rituals & Shows' : 'ପୂଜା ନୀତି କାନ୍ତି'}</span>
+            </a>
+
             <button
               onClick={() => setIsLiveModalOpen(true)}
               className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0"
@@ -117,11 +122,6 @@ export const Header: React.FC = () => {
             <a href="#ground-map" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
               <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'Melan Padia Map' : 'ମଣ୍ଡପ ମାନଚିତ୍ର'}</span>
-            </a>
-
-            <a href="#schedule" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
-              <Calendar className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Rituals & Shows' : 'ପୂଜା ନୀତି କାନ୍ତି'}</span>
             </a>
 
             <a href="#passes-donations" className="flex items-center gap-1.5 text-gray-800 hover:text-[#B8001F] transition-colors whitespace-nowrap shrink-0">
@@ -201,6 +201,14 @@ export const Header: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-2 text-sm font-semibold pt-2">
             <a
+              href="#schedule"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
+            >
+              <Calendar className="w-4 h-4 text-[#B8001F] shrink-0" />
+              <span className="whitespace-nowrap">{language === 'en' ? 'Rituals' : 'ପୂଜା ନୀତି'}</span>
+            </a>
+            <a
               href="#live-darshan"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
@@ -215,14 +223,6 @@ export const Header: React.FC = () => {
             >
               <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'Ground Map' : 'ମାନଚିତ୍ର'}</span>
-            </a>
-            <a
-              href="#schedule"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
-            >
-              <Calendar className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Rituals' : 'ପୂଜା ନୀତି'}</span>
             </a>
             <a
               href="#passes-donations"

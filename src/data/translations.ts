@@ -77,7 +77,7 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
     key: 'hero_subtitle',
     section: 'hero',
     label: 'Hero Theme Subtitle',
-    textEn: 'Historic Bauda Garh Fort Theme & Gold Sanctum',
+    textEn: 'Historic Baudha Garh Fort Theme & Gold Sanctum',
     defaultOr: 'ଐତିହାସିକ ବାଉଡ଼ ଗଡ଼ ତୋରଣ ଓ ସୁନା ଚାନ୍ଦି ମେଢ଼'
   },
   {
@@ -353,7 +353,7 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
   }
 ];
 
-export const DEFAULT_TRANSLATIONS_MAP: Record<string, { textEn: string; defaultOr: string }> = 
+export const DEFAULT_TRANSLATIONS_MAP: Record<string, { textEn: string; defaultOr: string }> =
   DEFAULT_TRANSLATIONS.reduce((acc, item) => {
     acc[item.key] = { textEn: item.textEn, defaultOr: item.defaultOr };
     return acc;
