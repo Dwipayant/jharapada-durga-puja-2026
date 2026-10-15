@@ -29,7 +29,8 @@ import {
   Languages,
   Search,
   Save,
-  RotateCcw
+  RotateCcw,
+  Music
 } from 'lucide-react';
 import { DEFAULT_TRANSLATIONS } from '../data/translations';
 
@@ -55,6 +56,9 @@ export const AdminModal: React.FC = () => {
     updateCrowdStatus,
     rituals,
     updateRitualEvent,
+    updateCulturalProgram,
+    addCulturalProgram,
+    deleteCulturalProgram,
     addGalleryItem,
     deleteGalleryItem,
     gallery,
@@ -73,8 +77,38 @@ export const AdminModal: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [adminTab, setAdminTab] = useState<'stream' | 'ticker' | 'crowd' | 'rituals' | 'upload' | 'history' | 'analytics' | 'scanner' | 'translations'>('translations');
+  const [adminTab, setAdminTab] = useState<'stream' | 'ticker' | 'crowd' | 'rituals' | 'cultural' | 'upload' | 'history' | 'analytics' | 'scanner' | 'translations'>('translations');
   
+  // Cultural Programs Editor state
+  const [selectedCulturalDayKey, setSelectedCulturalDayKey] = useState<string>('ashtami');
+  const [newProgTime, setNewProgTime] = useState('08:30 PM');
+  const [newProgTypeEn, setNewProgTypeEn] = useState('Grand Festival Musical Evening');
+  const [newProgTypeOr, setNewProgTypeOr] = useState('ମେଲୋଡି ତାରକା ସନ୍ଧ୍ୟା');
+  const [newProgArtistEn, setNewProgArtistEn] = useState('');
+  const [newProgArtistOr, setNewProgArtistOr] = useState('');
+  const [culturalSaveMsg, setCulturalSaveMsg] = useState<string | null>(null);
+  const [isAddingProgram, setIsAddingProgram] = useState(false);
+
+  const handleAddCulturalProgram = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProgArtistEn.trim()) {
+      alert('Please enter Artist or Band name in English!');
+      return;
+    }
+    addCulturalProgram(selectedCulturalDayKey, {
+      time: newProgTime.trim() || '08:30 PM',
+      artistEn: newProgArtistEn.trim(),
+      artistOr: newProgArtistOr.trim() || newProgArtistEn.trim(),
+      typeEn: newProgTypeEn.trim() || 'Cultural Musical Program',
+      typeOr: newProgTypeOr.trim() || 'ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ'
+    });
+    setNewProgArtistEn('');
+    setNewProgArtistOr('');
+    setIsAddingProgram(false);
+    setCulturalSaveMsg('✨ Cultural stage event added successfully!');
+    setTimeout(() => setCulturalSaveMsg(null), 3000);
+  };
+
   // Translation Editor state
   const [translationSearch, setTranslationSearch] = useState('');
   const [translationSectionFilter, setTranslationSectionFilter] = useState<string>('all');
@@ -583,6 +617,18 @@ export const AdminModal: React.FC = () => {
               >
                 <Clock className="w-4 h-4" />
                 <span>Ritual Schedule</span>
+              </button>
+
+              <button
+                onClick={() => setAdminTab('cultural')}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
+                  adminTab === 'cultural' 
+                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
+                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <Music className="w-4 h-4 text-[#FFD700]" />
+                <span>Cultural Stage ({rituals.reduce((acc, r) => acc + (r.culturalPrograms?.length || 0), 0)})</span>
               </button>
 
               <button
@@ -1105,6 +1151,20 @@ export const AdminModal: React.FC = () => {
             {/* TAB 4: RITUAL SCHEDULE EDITOR */}
             {adminTab === 'rituals' && (
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                <div className="p-3 rounded-xl bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-300 flex items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-[#B8001F]" />
+                    <span className="text-xs font-bold text-amber-950">Looking to update Evening Cultural Stage & Orchestra?</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAdminTab('cultural')}
+                    className="crimson-button px-3 py-1 rounded-lg text-xs font-bold text-white shadow-xs shrink-0 flex items-center gap-1"
+                  >
+                    <span>Open Cultural Stage Editor</span>
+                  </button>
+                </div>
+
                 <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider">
                   Edit Daily Ritual Timings
                 </h4>
@@ -1129,6 +1189,319 @@ export const AdminModal: React.FC = () => {
                     ))}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* TAB: CULTURAL STAGE EVENING LINEUP EDITOR */}
+            {adminTab === 'cultural' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-amber-200">
+                  <div>
+                    <h3 className="text-base font-bold font-serif-royal text-[#7D0000] flex items-center gap-2">
+                      <Music className="w-5 h-5 text-[#B8001F]" />
+                      <span>Cultural Stage Evening Lineup Manager</span>
+                    </h3>
+                    <p className="text-xs text-amber-950/70 font-medium mt-0.5">
+                      Melody Nights, Orchestra, and Folk Performances — Live on Main Cultural Stage Melan Padia.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingProgram(!isAddingProgram)}
+                    className="crimson-button px-3.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-[#FFD700]" />
+                    <span>{isAddingProgram ? 'Close Form' : 'Add Cultural Event'}</span>
+                  </button>
+                </div>
+
+                {culturalSaveMsg && (
+                  <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-400 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-sm animate-fadeIn">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{culturalSaveMsg}</span>
+                  </div>
+                )}
+
+                {/* Day Selection Tabs */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  {rituals.map((r) => {
+                    const count = r.culturalPrograms?.length || 0;
+                    return (
+                      <button
+                        key={r.dayKey}
+                        type="button"
+                        onClick={() => setSelectedCulturalDayKey(r.dayKey)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 cursor-pointer ${
+                          selectedCulturalDayKey === r.dayKey
+                            ? 'bg-[#B8001F] text-white border-[#B8001F] shadow-sm'
+                            : 'bg-white text-amber-950 border-amber-300 hover:bg-amber-100/60'
+                        }`}
+                      >
+                        <span>{r.dayTitleEn}</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                          selectedCulturalDayKey === r.dayKey ? 'bg-white text-[#B8001F]' : 'bg-amber-200 text-amber-950'
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Add New Cultural Program Form */}
+                {isAddingProgram && (
+                  <form onSubmit={handleAddCulturalProgram} className="bg-amber-50/90 p-4 rounded-2xl border-2 border-[#D4AF37] space-y-4 shadow-sm animate-fadeIn">
+                    <div className="flex items-center justify-between pb-2 border-b border-amber-200">
+                      <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-1.5">
+                        <Plus className="w-4 h-4 text-[#B8001F]" />
+                        <span>Add Program for {rituals.find(r => r.dayKey === selectedCulturalDayKey)?.dayTitleEn} ({rituals.find(r => r.dayKey === selectedCulturalDayKey)?.date})</span>
+                      </h4>
+                      <span className="text-[10px] font-bold text-amber-900">Main Cultural Stage</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-amber-950 mb-1">Show Time (e.g. 09:00 PM)</label>
+                        <input
+                          type="text"
+                          required
+                          value={newProgTime}
+                          onChange={(e) => setNewProgTime(e.target.value)}
+                          placeholder="09:00 PM"
+                          className="w-full bg-white border border-amber-300 rounded-lg px-3 py-1.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-amber-950 mb-1">Program Type (English)</label>
+                        <input
+                          type="text"
+                          required
+                          value={newProgTypeEn}
+                          onChange={(e) => setNewProgTypeEn(e.target.value)}
+                          placeholder="Grand Festival Musical Evening"
+                          className="w-full bg-white border border-amber-300 rounded-lg px-3 py-1.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-amber-950 mb-1">Program Type (Odia)</label>
+                        <input
+                          type="text"
+                          value={newProgTypeOr}
+                          onChange={(e) => setNewProgTypeOr(e.target.value)}
+                          placeholder="ମେଲୋଡି ତାରକା ସନ୍ଧ୍ୟା"
+                          className="w-full bg-white border border-amber-300 rounded-lg px-3 py-1.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-amber-950 mb-1">Artist / Troupe Name (English)</label>
+                        <input
+                          type="text"
+                          required
+                          value={newProgArtistEn}
+                          onChange={(e) => setNewProgArtistEn(e.target.value)}
+                          placeholder="Bhubaneswar Orchestra Ensemble"
+                          className="w-full bg-white border border-amber-300 rounded-lg px-3 py-1.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-amber-950 mb-1">Artist / Troupe Name (Odia)</label>
+                        <input
+                          type="text"
+                          value={newProgArtistOr}
+                          onChange={(e) => setNewProgArtistOr(e.target.value)}
+                          placeholder="ଭୁବନେଶ୍ୱର ମେଲୋଡି ନାଇଟ୍"
+                          className="w-full bg-white border border-amber-300 rounded-lg px-3 py-1.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Presets */}
+                    <div>
+                      <span className="block text-[10px] font-bold text-amber-900/80 mb-1.5">Quick Genre Presets:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { en: 'Grand Festival Musical Evening', or: 'ମେଲୋଡି ତାରକା ସନ୍ଧ୍ୟା' },
+                          { en: 'Odissi Nritya Performance', or: 'ମଙ୍ଗଳାଚରଣ ଓ ଓଡ଼ିଶୀ ନୃତ୍ୟ' },
+                          { en: 'Devotional Bhajan Sandhya', or: 'ଭକ୍ତିରସାମୃତ ଭଜନ ସନ୍ଧ୍ୟା' },
+                          { en: 'Rangabati Sambalpuri Folk Dance', or: 'ସମ୍ବଲପୁରୀ ନୃତ୍ୟ ଧମାକା' },
+                          { en: 'Grand Fireworks & Musical Fusion', or: 'ମହା ଆତସବାଜି ଓ ସଙ୍ଗୀତ' },
+                          { en: 'Odisha Folk Heritage Parade', or: 'ଓଡ଼ିଶୀ ପାରମ୍ପରିକ ଲୋକକଳା' }
+                        ].map((preset, idx) => (
+                          <button
+                            type="button"
+                            key={idx}
+                            onClick={() => {
+                              setNewProgTypeEn(preset.en);
+                              setNewProgTypeOr(preset.or);
+                            }}
+                            className="px-2 py-0.5 rounded bg-white border border-amber-300 text-[10px] font-bold text-amber-900 hover:bg-amber-100 cursor-pointer"
+                          >
+                            + {preset.en}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2 border-t border-amber-200">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingProgram(false)}
+                        className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-xs font-bold cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="crimson-button px-4 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4 text-[#FFD700]" />
+                        <span>Add Event to Lineup</span>
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Cultural Programs Cards for Current Day */}
+                {(() => {
+                  const day = rituals.find(r => r.dayKey === selectedCulturalDayKey) || rituals[0];
+                  const progs = day?.culturalPrograms || [];
+
+                  if (progs.length === 0) {
+                    return (
+                      <div className="bg-amber-50/70 p-8 rounded-2xl border-dashed border-2 border-amber-300 text-center space-y-2">
+                        <Music className="w-10 h-10 text-amber-400 mx-auto" />
+                        <h4 className="text-sm font-bold text-[#7D0000]">No Cultural Programs Scheduled for {day?.dayTitleEn}</h4>
+                        <p className="text-xs text-amber-950/70">Click "Add Cultural Event" above to add evening melody, orchestra, or dance show.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      {progs.map((prog, index) => (
+                        <div key={prog.id} className="bg-white p-4 rounded-2xl border-2 border-amber-200 space-y-3 shadow-xs">
+                          <div className="flex items-center justify-between pb-2 border-b border-amber-100">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-full bg-[#B8001F] text-[#FFD700] text-xs font-black flex items-center justify-center">
+                                {index + 1}
+                              </span>
+                              <span className="text-xs font-bold text-[#8B0000]">Stage Program #{index + 1}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete "${prog.artistEn}"?`)) {
+                                  deleteCulturalProgram(day.dayKey, prog.id);
+                                  setCulturalSaveMsg(`Deleted "${prog.artistEn}" from lineup.`);
+                                  setTimeout(() => setCulturalSaveMsg(null), 3000);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-all flex items-center gap-1 text-xs font-bold cursor-pointer"
+                              title="Delete Cultural Program"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+
+                          {/* Editable Inputs */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                            <div>
+                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Show Time</label>
+                              <input
+                                type="text"
+                                defaultValue={prog.time}
+                                onBlur={(e) => {
+                                  updateCulturalProgram(day.dayKey, prog.id, { time: e.target.value });
+                                  setCulturalSaveMsg('✨ Show time updated!');
+                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
+                                }}
+                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Program Tag (English)</label>
+                              <input
+                                type="text"
+                                defaultValue={prog.typeEn}
+                                onBlur={(e) => {
+                                  updateCulturalProgram(day.dayKey, prog.id, { typeEn: e.target.value });
+                                  setCulturalSaveMsg('✨ Program tag updated!');
+                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
+                                }}
+                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-medium focus:bg-white focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Program Tag (Odia)</label>
+                              <input
+                                type="text"
+                                defaultValue={prog.typeOr}
+                                onBlur={(e) => {
+                                  updateCulturalProgram(day.dayKey, prog.id, { typeOr: e.target.value });
+                                  setCulturalSaveMsg('✨ Odia program tag updated!');
+                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
+                                }}
+                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-medium focus:bg-white focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Artist / Band Name (English)</label>
+                              <input
+                                type="text"
+                                defaultValue={prog.artistEn}
+                                onBlur={(e) => {
+                                  updateCulturalProgram(day.dayKey, prog.id, { artistEn: e.target.value });
+                                  setCulturalSaveMsg('✨ Artist name updated!');
+                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
+                                }}
+                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Artist / Band Name (Odia)</label>
+                              <input
+                                type="text"
+                                defaultValue={prog.artistOr}
+                                onBlur={(e) => {
+                                  updateCulturalProgram(day.dayKey, prog.id, { artistOr: e.target.value });
+                                  setCulturalSaveMsg('✨ Odia artist name updated!');
+                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
+                                }}
+                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Live Website Preview Box */}
+                          <div className="pt-2">
+                            <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-900/70 mb-1">Live Website Preview:</span>
+                            <div className="p-3.5 rounded-xl bg-[#FFFDF8] border border-amber-300 shadow-xs">
+                              <div className="flex items-center justify-between text-xs text-[#B8001F] font-bold mb-1">
+                                <span>{prog.time}</span>
+                                <span className="bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-[10px] text-amber-950 font-bold">
+                                  {language === 'en' ? prog.typeEn : prog.typeOr}
+                                </span>
+                              </div>
+                              <h4 className="text-base font-bold text-amber-950 font-serif-royal">
+                                {language === 'en' ? prog.artistEn : prog.artistOr}
+                              </h4>
+                              <p className="text-xs text-amber-900/70 mt-1 font-medium">
+                                {language === 'en' ? 'Live on Main Cultural Stage Melan Padia' : 'ମେଲଣ ପଡ଼ିଆ ମୁଖ୍ୟ ସାଂସ୍କୃତିକ ମଞ୍ଚ'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

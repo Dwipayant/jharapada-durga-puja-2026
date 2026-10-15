@@ -323,6 +323,20 @@ export const updateRitualInSupabase = async (dayKey: string, events: any[]): Pro
   }
 };
 
+/** Update Cultural Programs in Supabase DB */
+export const updateCulturalProgramsInSupabase = async (dayKey: string, culturalPrograms: any[]): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !supabase) return false;
+  try {
+    const { error } = await supabase
+      .from('rituals')
+      .update({ cultural_programs: culturalPrograms })
+      .eq('day_key', dayKey);
+    return !error;
+  } catch {
+    return false;
+  }
+};
+
 /** Fetch Stalls from Supabase DB */
 export const fetchStallsFromSupabase = async (): Promise<StallItem[] | null> => {
   if (!isSupabaseConfigured() || !supabase) return null;

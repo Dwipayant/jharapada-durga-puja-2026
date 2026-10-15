@@ -46,6 +46,7 @@ import {
   updateCrowdStatusInSupabase,
   fetchRitualsFromSupabase,
   updateRitualInSupabase,
+  updateCulturalProgramsInSupabase,
   fetchStallsFromSupabase,
   fetchPranamMessagesFromSupabase,
   insertPranamMessageToSupabase,
@@ -112,9 +113,12 @@ interface AppContextType {
   crowdStatus: CrowdStatus;
   updateCrowdStatus: (status: Partial<CrowdStatus>) => void;
 
-  // Rituals
+  // Rituals & Cultural Programs
   rituals: DailyRitual[];
   updateRitualEvent: (dayKey: string, eventId: string, updatedTime: string, updatedTitleEn: string, updatedTitleOr: string) => void;
+  updateCulturalProgram: (dayKey: string, programId: string, updated: Partial<{ time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }>) => void;
+  addCulturalProgram: (dayKey: string, program: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }) => void;
+  deleteCulturalProgram: (dayKey: string, programId: string) => void;
 
   // Passes
   passes: DigitalPass[];
@@ -202,7 +206,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [tickers, setTickers] = useState<TickerAnnouncement[]>(initialTicker);
   const [liveConfig, setLiveConfig] = useState<LiveStreamConfig>(initialLiveConfig);
   const [crowdStatus, setCrowdStatus] = useState<CrowdStatus>(initialCrowdStatus);
-  const [rituals, setRituals] = useState<DailyRitual[]>(initialRituals);
+  const [rituals, setRituals] = useState<DailyRitual[]>(() => {
+    try {
+      const saved = localStorage.getItem('jpuja_rituals_2026');
+      return saved ? JSON.parse(saved) : initialRituals;
+    } catch {
+      return initialRituals;
+    }
+  });
   const [passes, setPasses] = useState<DigitalPass[]>([]);
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [stalls, setStalls] = useState<StallItem[]>(initialStalls);
@@ -600,7 +611,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         return day;
       });
+      try {
+        localStorage.setItem('jpuja_rituals_2026', JSON.stringify(updated));
+      } catch {}
       return updated;
+    });
+  };
+
+  // Cultural program updates
+  const updateCulturalProgram = (dayKey: string, programId: string, updatedData: Partial<{ time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }>) => {
+    setRituals(prev => {
+      const updatedList = prev.map(day => {
+        if (day.dayKey === dayKey) {
+          const newPrograms = day.culturalPrograms.map(prog => prog.id === programId ? { ...prog, ...updatedData } : prog);
+          updateCulturalProgramsInSupabase(dayKey, newPrograms);
+          return { ...day, culturalPrograms: newPrograms };
+        }
+        return day;
+      });
+      try {
+        localStorage.setItem('jpuja_rituals_2026', JSON.stringify(updatedList));
+      } catch {}
+      return updatedList;
+    });
+  };
+
+  const addCulturalProgram = (dayKey: string, program: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }) => {
+    setRituals(prev => {
+      const updatedList = prev.map(day => {
+        if (day.dayKey === dayKey) {
+          const newProgram = {
+            id: 'c-' + Date.now(),
+            ...program
+          };
+          const newPrograms = [...day.culturalPrograms, newProgram];
+          updateCulturalProgramsInSupabase(dayKey, newPrograms);
+          return { ...day, culturalPrograms: newPrograms };
+        }
+        return day;
+      });
+      try {
+        localStorage.setItem('jpuja_rituals_2026', JSON.stringify(updatedList));
+      } catch {}
+      return updatedList;
+    });
+  };
+
+  const deleteCulturalProgram = (dayKey: string, programId: string) => {
+    setRituals(prev => {
+      const updatedList = prev.map(day => {
+        if (day.dayKey === dayKey) {
+          const newPrograms = day.culturalPrograms.filter(prog => prog.id !== programId);
+          updateCulturalProgramsInSupabase(dayKey, newPrograms);
+          return { ...day, culturalPrograms: newPrograms };
+        }
+        return day;
+      });
+      try {
+        localStorage.setItem('jpuja_rituals_2026', JSON.stringify(updatedList));
+      } catch {}
+      return updatedList;
     });
   };
 
@@ -731,6 +801,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateCrowdStatus,
       rituals,
       updateRitualEvent,
+      updateCulturalProgram,
+      addCulturalProgram,
+      deleteCulturalProgram,
       passes,
       createPass,
       donations,

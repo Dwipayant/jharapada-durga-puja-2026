@@ -61,7 +61,7 @@ export const Hero: React.FC = () => {
             {t('hero_main_title', 'Jharapada Durga Puja Samiti 2026', 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ସମିତି ୨୦୨୬')}
           </span>
           <span className="block text-2xl sm:text-4xl lg:text-5xl text-amber-950 font-sans font-black mt-2">
-            {t('hero_subtitle', 'Jharapada Melana padia, Bhubaneswar', 'ଝାରପଡା ମେଲଣ ପଡିଆ, ଭୁବନେଶ୍ୱର')}
+            {t('hero_subtitle', 'Melana padia, Bhubaneswar', 'ମେଲଣ ପଡିଆ, ଭୁବନେଶ୍ୱର')}
           </span>
         </h1>
 
