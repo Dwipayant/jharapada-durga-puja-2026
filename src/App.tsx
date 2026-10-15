@@ -2,7 +2,6 @@ import { AppProvider } from './context/AppContext';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { LiveDarshan } from './components/LiveDarshan';
-import { MelanMap } from './components/MelanMap';
 import { Schedule } from './components/Schedule';
 import { PassesAndDonation } from './components/PassesAndDonation';
 import { HeritageStory } from './components/HeritageStory';
@@ -28,7 +27,6 @@ export function AppContent() {
         <PassesAndDonation />
         <HeritageStory />
         <GalleryAndVR />
-        <MelanMap />
       </main>
       <Footer />
       <AdminModal />

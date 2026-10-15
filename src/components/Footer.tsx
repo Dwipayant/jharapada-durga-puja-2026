@@ -47,7 +47,6 @@ export const Footer: React.FC = () => {
               <li><a href="#passes-donations" className="hover:text-[#B8001F]">80G Tax Exemption Donation</a></li>
               <li><a href="#heritage" className="hover:text-[#B8001F]">Bauda Garh Fort History</a></li>
               <li><a href="#gallery" className="hover:text-[#B8001F]">Photos & 360 Virtual Tour</a></li>
-              <li><a href="#ground-map" className="hover:text-[#B8001F]">Interactive Ground Map</a></li>
             </ul>
           </div>
 

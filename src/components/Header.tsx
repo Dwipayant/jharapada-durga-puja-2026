@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import bannerLogo from '../assets/banner-logo.gif';
 import {
   Tv,
-  MapPin,
   Calendar,
   Ticket,
   ShieldCheck,
@@ -135,10 +134,6 @@ export const Header: React.FC = () => {
               <span className="whitespace-nowrap">{language === 'en' ? 'Gallery & 360' : 'ଗ୍ୟାଲେରୀ'}</span>
             </a>
 
-            <a href="#ground-map" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
-              <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Map' : 'ମାନଚିତ୍ର'}</span>
-            </a>
           </nav>
 
           {/* Right Action Tools */}
@@ -245,14 +240,6 @@ export const Header: React.FC = () => {
             >
               <Camera className="w-4 h-4 text-[#B8001F] shrink-0" />
               <span className="whitespace-nowrap">{language === 'en' ? 'Gallery & 360' : 'ଗ୍ୟାଲେରୀ'}</span>
-            </a>
-            <a
-              href="#ground-map"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
-            >
-              <MapPin className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Map' : 'ମାନଚିତ୍ର'}</span>
             </a>
           </div>
         </div>

@@ -12,20 +12,18 @@ import {
   Download, 
   Printer, 
   ShieldCheck, 
-  CreditCard, 
   Smartphone, 
-  QrCode,
-  UserCheck,
-  Building,
-  Award,
-  Copy,
-  Check,
-  Lock,
-  ArrowRight,
-  Shield,
-  RefreshCw,
-  Sparkles,
-  X,
+  QrCode, 
+  UserCheck, 
+  Award, 
+  Copy, 
+  Check, 
+  Lock, 
+  ArrowRight, 
+  Shield, 
+  RefreshCw, 
+  Sparkles, 
+  X, 
   Camera
 } from 'lucide-react';
 
@@ -60,15 +58,6 @@ export const PassesAndDonation: React.FC = () => {
 
   // Real-time Payment Input States
   const [copiedVpa, setCopiedVpa] = useState(false);
-
-  // Card
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardName, setCardName] = useState('');
-
-  // NetBanking
-  const [selectedBank, setSelectedBank] = useState('SBI');
 
   // Interactive Payment Gateway Modal Simulation State
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -183,10 +172,7 @@ export const PassesAndDonation: React.FC = () => {
     if (donationForm.paymentMethod === 'UPI') {
       setPaymentStep('upi_qr');
     } else {
-      setPaymentStep('connecting');
-      setTimeout(() => {
-        setPaymentStep('otp');
-      }, 1500);
+      setPaymentStep('upi_qr');
     }
   };
 
@@ -552,142 +538,46 @@ export const PassesAndDonation: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Real-time Multi-Option Payment Gateway Selector */}
+                {/* Real-time UPI Payment Gateway Selector */}
                 <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-1.5">
                       <Shield className="w-4 h-4 text-[#B8001F]" />
-                      Select Payment Method
+                      Payment Method
                     </label>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded font-bold">
                       🔒 256-Bit SSL Encrypted
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDonationForm({ ...donationForm, paymentMethod: 'UPI' })}
-                      className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                        donationForm.paymentMethod === 'UPI'
-                          ? 'crimson-button text-white shadow-sm'
-                          : 'bg-white border-amber-300 text-amber-950 hover:border-amber-400'
-                      }`}
-                    >
-                      <Smartphone className="w-5 h-5 text-[#FFD700]" />
-                      <span className="text-xs font-bold">UPI / GPay / PhonePe</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDonationForm({ ...donationForm, paymentMethod: 'Card' })}
-                      className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                        donationForm.paymentMethod === 'Card'
-                          ? 'crimson-button text-white shadow-sm'
-                          : 'bg-white border-amber-300 text-amber-950 hover:border-amber-400'
-                      }`}
-                    >
-                      <CreditCard className="w-5 h-5 text-[#FFD700]" />
-                      <span className="text-xs font-bold">Credit / Debit Card</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setDonationForm({ ...donationForm, paymentMethod: 'NetBanking' })}
-                      className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                        donationForm.paymentMethod === 'NetBanking'
-                          ? 'crimson-button text-white shadow-sm'
-                          : 'bg-white border-amber-300 text-amber-950 hover:border-amber-400'
-                      }`}
-                    >
-                      <Building className="w-5 h-5 text-[#FFD700]" />
-                      <span className="text-xs font-bold">NetBanking</span>
-                    </button>
+                  <div className="p-3.5 rounded-xl border border-amber-300 bg-white shadow-sm flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#B8001F] to-[#8B0000] flex items-center justify-center text-[#FFD700] shadow-sm">
+                        <Smartphone className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-amber-950">UPI / QR Payment</p>
+                        <p className="text-[11px] text-amber-950/70 font-medium">GPay, PhonePe, Paytm & BHIM UPI</p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-300">
+                      Official Committee UPI
+                    </span>
                   </div>
 
                   {/* Payment Details Sub-Form */}
-                  {donationForm.paymentMethod === 'UPI' && (
-                    <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-2">
-                      <div className="flex items-center gap-2 text-xs font-bold text-amber-950">
-                        <Smartphone className="w-4 h-4 text-[#B8001F]" />
-                        <span>Official Committee UPI VPA ID:</span>
-                        <span className="font-mono font-extrabold text-[#8B0000] bg-amber-50 px-2.5 py-0.5 rounded border border-amber-300">
-                          {upiId}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-amber-950/80 font-medium">
-                        Clicking <b>"Proceed to Pay"</b> below will display the official <b>UPI QR Code</b> for instant scanning & receipt issuance.
-                      </p>
+                  <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-950">
+                      <Smartphone className="w-4 h-4 text-[#B8001F]" />
+                      <span>Official Committee UPI VPA ID:</span>
+                      <span className="font-mono font-extrabold text-[#8B0000] bg-amber-50 px-2.5 py-0.5 rounded border border-amber-300">
+                        {upiId}
+                      </span>
                     </div>
-                  )}
-
-                  {donationForm.paymentMethod === 'Card' && (
-                    <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-3">
-                      <div className="space-y-2">
-                        <label className="block text-[11px] font-bold text-amber-950">Card Number</label>
-                        <input
-                          type="text"
-                          maxLength={19}
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim())}
-                          placeholder="4532 •••• •••• 8910"
-                          className="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-xs text-amber-950 font-mono focus:outline-none focus:border-[#B8001F]"
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-1">
-                          <label className="block text-[10px] font-bold text-amber-950">Expiry (MM/YY)</label>
-                          <input
-                            type="text"
-                            maxLength={5}
-                            value={cardExpiry}
-                            onChange={(e) => setCardExpiry(e.target.value)}
-                            placeholder="12/28"
-                            className="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs text-amber-950 text-center focus:outline-none"
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-[10px] font-bold text-amber-950">CVV Code</label>
-                          <input
-                            type="password"
-                            maxLength={4}
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value)}
-                            placeholder="•••"
-                            className="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs text-amber-950 text-center focus:outline-none"
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-[10px] font-bold text-amber-950">Card Holder</label>
-                          <input
-                            type="text"
-                            value={cardName}
-                            onChange={(e) => setCardName(e.target.value)}
-                            placeholder="Name on card"
-                            className="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-1.5 text-xs text-amber-950 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {donationForm.paymentMethod === 'NetBanking' && (
-                    <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-3">
-                      <label className="block text-[11px] font-bold text-amber-950">Select Internet Banking Provider</label>
-                      <select
-                        value={selectedBank}
-                        onChange={(e) => setSelectedBank(e.target.value)}
-                        className="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-xs text-amber-950 font-bold focus:outline-none"
-                      >
-                        <option value="SBI">State Bank of India (SBI)</option>
-                        <option value="HDFC">HDFC Bank</option>
-                        <option value="ICICI">ICICI Bank</option>
-                        <option value="AXIS">Axis Bank</option>
-                        <option value="PNB">Punjab National Bank (PNB)</option>
-                        <option value="BOB">Bank of Baroda</option>
-                      </select>
-                    </div>
-                  )}
+                    <p className="text-[11px] text-amber-950/80 font-medium">
+                      Clicking <b>"Proceed to Pay"</b> below will display the official <b>UPI QR Code</b> for instant scanning & receipt issuance.
+                    </p>
+                  </div>
                 </div>
 
                 <button

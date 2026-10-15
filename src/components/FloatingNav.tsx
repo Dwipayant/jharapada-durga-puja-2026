@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Tv, MapPin, Calendar, Ticket, Sparkles, Image, ArrowUp } from 'lucide-react';
+import { Tv, Calendar, Ticket, Sparkles, Image, ArrowUp } from 'lucide-react';
 
 export const FloatingNav: React.FC = () => {
   const { language, setIsLiveModalOpen, isLiveModalOpen, isAdminModalOpen, isAnyModalOpen } = useApp();
@@ -11,7 +11,7 @@ export const FloatingNav: React.FC = () => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
 
-      const sections = ['schedule', 'live-darshan', 'passes-donations', 'heritage', 'gallery', 'ground-map'];
+      const sections = ['schedule', 'live-darshan', 'passes-donations', 'heritage', 'gallery'];
       const scrollPosition = window.scrollY + 250;
 
       for (const sectionId of sections) {
@@ -79,13 +79,6 @@ export const FloatingNav: React.FC = () => {
       labelOr: 'ଗ୍ୟାଲେରୀ',
       icon: Image,
       href: '#gallery'
-    },
-    {
-      id: 'ground-map',
-      labelEn: 'Map',
-      labelOr: 'ମାନଚିତ୍ର',
-      icon: MapPin,
-      href: '#ground-map'
     }
   ];
 

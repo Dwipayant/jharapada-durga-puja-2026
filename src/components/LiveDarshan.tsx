@@ -8,7 +8,6 @@ import {
   Send, 
   Flower2, 
   Radio, 
-  Car, 
   CheckCircle2, 
   Share2
 } from 'lucide-react';
@@ -18,7 +17,6 @@ export const LiveDarshan: React.FC = () => {
   const { 
     language, 
     liveConfig, 
-    crowdStatus, 
     pranamMessages, 
     addPranamMessage, 
     likePranamMessage 
@@ -58,11 +56,7 @@ export const LiveDarshan: React.FC = () => {
     setTimeout(() => setPranamSent(false), 3000);
   };
 
-  const crowdGaugeColor = {
-    normal: 'text-emerald-800 border-emerald-300 bg-emerald-50',
-    moderate: 'text-amber-900 border-amber-300 bg-amber-50',
-    heavy: 'text-rose-900 border-rose-300 bg-rose-50'
-  }[crowdStatus.level];
+
 
   return (
     <section id="live-darshan" className="py-16 bg-[#FFFDF8] relative text-amber-950 border-b border-[#D4AF37]/30">
@@ -155,86 +149,7 @@ export const LiveDarshan: React.FC = () => {
               </div>
             </div>
 
-            {/* Real-time Crowd Density & Parking Gauge Component */}
-            <div className="glass-card p-6 rounded-2xl border-t-4 border-t-[#B8001F] shadow-md">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-[#B8001F]" />
-                    <h3 className="text-lg font-bold font-serif-royal text-[#7D0000]">
-                      {language === 'en' ? 'Smart Crowd Density & Parking Meter' : 'ଗହଳି ଓ ପାର୍କିଂ ସୂଚକ'}
-                    </h3>
-                  </div>
-                  <p className="text-xs text-amber-950/70 font-medium mt-0.5">
-                    {language === 'en' ? 'Updated live by Control Room ground team' : 'ନିୟନ୍ତ୍ରଣ କକ୍ଷ ଦ୍ୱାରା ପ୍ରତ୍ୟକ୍ଷ ଆପଡେଟ୍'} • {crowdStatus.lastUpdated}
-                  </p>
-                </div>
 
-                {/* Status Indicator Pill */}
-                <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-bold shadow-sm ${crowdGaugeColor}`}>
-                  <span className="w-3 h-3 rounded-full bg-current animate-ping" />
-                  <span>
-                    {crowdStatus.level === 'normal' && (language === 'en' ? '🟢 Normal Crowd (<15m Wait)' : '🟢 ସ୍ୱାଭାବିକ ଗହଳି (<୧୫ମି)')}
-                    {crowdStatus.level === 'moderate' && (language === 'en' ? '🟡 Moderate Surge (15-30m Wait)' : '🟡 ମଧ୍ୟମ ଗହଳି (୧୫-୩୦ମି)')}
-                    {crowdStatus.level === 'heavy' && (language === 'en' ? '🔴 Heavy Surge (>45m Wait)' : '🔴 ପ୍ରବଳ ଗହଳି (>୪୫ମି)')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Parking Lot Status Bars */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Gate A */}
-                <div className="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-semibold text-amber-950 flex items-center gap-1">
-                      <Car className="w-3.5 h-3.5 text-[#B8001F]" />
-                      {language === 'en' ? 'Gate-A (Cuttack Road)' : 'ଗେଟ୍-A (କଟକ ରୋଡ୍)'}
-                    </span>
-                    <span className="font-bold text-[#8B0000]">{crowdStatus.parking.gateA}%</span>
-                  </div>
-                  <div className="w-full bg-amber-200/60 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${crowdStatus.parking.gateA > 80 ? 'bg-red-600' : crowdStatus.parking.gateA > 50 ? 'bg-amber-500' : 'bg-emerald-600'}`}
-                      style={{ width: `${crowdStatus.parking.gateA}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Gate B */}
-                <div className="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-semibold text-amber-950 flex items-center gap-1">
-                      <Car className="w-3.5 h-3.5 text-[#B8001F]" />
-                      {language === 'en' ? 'Gate-B (Jhar. Jail Ground)' : 'ଗେଟ୍-B (ଝାରପଡା ଜେଲ)'}
-                    </span>
-                    <span className="font-bold text-[#8B0000]">{crowdStatus.parking.gateB}%</span>
-                  </div>
-                  <div className="w-full bg-amber-200/60 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${crowdStatus.parking.gateB > 80 ? 'bg-red-600' : crowdStatus.parking.gateB > 50 ? 'bg-amber-500' : 'bg-emerald-600'}`}
-                      style={{ width: `${crowdStatus.parking.gateB}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Gate C */}
-                <div className="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-semibold text-amber-950 flex items-center gap-1">
-                      <Car className="w-3.5 h-3.5 text-[#B8001F]" />
-                      {language === 'en' ? 'Gate-C (Overbridge Side)' : 'ଗେଟ୍-C (ଓଭରବ୍ରିଜ୍)'}
-                    </span>
-                    <span className="font-bold text-[#8B0000]">{crowdStatus.parking.gateC}%</span>
-                  </div>
-                  <div className="w-full bg-amber-200/60 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${crowdStatus.parking.gateC > 80 ? 'bg-red-600' : crowdStatus.parking.gateC > 50 ? 'bg-amber-500' : 'bg-emerald-600'}`}
-                      style={{ width: `${crowdStatus.parking.gateC}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
 
           </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
-import { Tv, Ticket, MapPin, Heart, Sparkles, Clock, Flame, ShieldAlert, Award } from 'lucide-react';
+import { Tv, Ticket, Heart, Sparkles, Clock } from 'lucide-react';
 import { JhotiDivider } from './JhotiDivider';
 
 export const Hero: React.FC = () => {
@@ -50,7 +50,7 @@ export const Hero: React.FC = () => {
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/90 border border-amber-300 shadow-md mb-6 animate-bounce">
           <Sparkles className="w-4 h-4 text-[#B8001F]" />
           <span className="text-xs sm:text-sm font-extrabold text-[#7D0000] tracking-wider uppercase">
-            {t('hero_top_badge', 'Bhubaneswar Premier Durga Puja Extravaganza', 'ଭୁବନେଶ୍ୱରର ସର୍ବଶ୍ରେଷ୍ଠ ଦୁର୍ଗା ପୂଜା ମହୋତ୍ସବ')}
+            {t('hero_top_badge', 'Durga Puja 2026', 'ଦୁର୍ଗା ପୂଜା ୨୦୨୬')}
           </span>
           <span className="w-2 h-2 rounded-full bg-[#B8001F] animate-ping" />
         </div>
@@ -58,16 +58,16 @@ export const Hero: React.FC = () => {
         {/* Main Heading */}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold font-serif-royal leading-tight tracking-wide mb-4">
           <span className="block gold-gradient-text drop-shadow-sm">
-            {t('hero_main_title', 'Jharapada Durga Puja 2026', 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ୨୦୨୬')}
+            {t('hero_main_title', 'Jharapada Durga Puja Samiti 2026', 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ସମିତି ୨୦୨୬')}
           </span>
           <span className="block text-2xl sm:text-4xl lg:text-5xl text-amber-950 font-sans font-black mt-2">
-            {t('hero_subtitle', 'Historic Baudha Garh Fort Theme & Gold Sanctum', 'ଐତିହାସିକ ବାଉଡ଼ ଗଡ଼ ତୋରଣ ଓ ସୁନା ଚାନ୍ଦି ମେଢ଼')}
+            {t('hero_subtitle', 'Jharapada Melana padia, Bhubaneswar', 'ଝାରପଡା ମେଲଣ ପଡିଆ, ଭୁବନେଶ୍ୱର')}
           </span>
         </h1>
 
         {/* Subtitle */}
         <p className="max-w-3xl mx-auto text-base sm:text-lg text-amber-950/80 font-sans font-medium leading-relaxed mb-8">
-          {t('hero_description', 'Experience 24x7 4K Ultra HD Live Darshan on YouTube, real-time crowd status, interactive 3D Melan Padia ground map, and digital VIP express QR passes.', 'ୟୁଟ୍ୟୁବ୍ ୪K HD ମାଧ୍ୟମରେ ୨୪x୭ ଲାଇଭ୍ ଦର୍ଶନ କରନ୍ତୁ, ମଣ୍ଡପ ମାନଚିତ୍ର ଦେଖନ୍ତୁ ଏବଂ ବରିଷ୍ଠ ନାଗରିକ ଫାଷ୍ଟ-ଟ୍ରାକ୍ QR ପାସ୍ ହାସଲ କରନ୍ତୁ ।')}
+          {t('hero_description', 'Experience 24x7 4K Ultra HD Live Darshan on YouTube & VIP express QR passes.', 'ୟୁଟ୍ୟୁବ୍ ୪K HD ମାଧ୍ୟମରେ ୨୪x୭ ଲାଇଭ୍ ଦର୍ଶନ କରନ୍ତୁ, ଏବଂ ବରିଷ୍ଠ ନାଗରିକ ଫାଷ୍ଟ-ଟ୍ରାକ୍ QR ପାସ୍ ହାସଲ କରନ୍ତୁ ।')}
         </p>
 
         {/* Action Buttons */}
@@ -89,14 +89,6 @@ export const Hero: React.FC = () => {
           >
             <Ticket className="w-5 h-5 text-[#7D0000]" />
             <span>{t('hero_btn_vip_pass', 'Get VIP / Senior QR Pass', 'ବରିଷ୍ଠ / VIP QR ପାସ୍')}</span>
-          </a>
-
-          <a
-            href="#ground-map"
-            className="px-6 py-3.5 rounded-xl bg-white hover:bg-amber-50 text-amber-950 border border-amber-300 flex items-center gap-2 text-base font-bold transition-all shadow-md"
-          >
-            <MapPin className="w-5 h-5 text-[#B8001F]" />
-            <span>{language === 'en' ? 'Map' : 'ମାନଚିତ୍ର'}</span>
           </a>
 
           <a
@@ -147,50 +139,7 @@ export const Hero: React.FC = () => {
           </div>
         </div>
 
-        {/* Feature Highlights Banner */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto text-left">
-          <div className="glass-card p-4 rounded-xl border-l-4 border-l-[#B8001F]">
-            <div className="flex items-center gap-2 text-[#B8001F] font-bold text-sm mb-1">
-              <Award className="w-4 h-4" />
-              <span>{t('hero_highlight_1_title', '120ft Bauda Garh', '୧୨୦ ଫୁଟ ତୋରଣ')}</span>
-            </div>
-            <p className="text-xs text-amber-950 font-medium">
-              {t('hero_highlight_1_desc', 'Historic fort themed illumination gate', 'ଐତିହାସିକ ବାଉଡ଼ ଗଡ଼ ସ୍ୱର୍ଣ୍ଣିମ ତୋରଣ')}
-            </p>
-          </div>
-
-          <div className="glass-card p-4 rounded-xl border-l-4 border-l-amber-500">
-            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm mb-1">
-              <Flame className="w-4 h-4" />
-              <span>{t('hero_highlight_2_title', '2.5kg Gold Medha', 'ସୁନା ଚାନ୍ଦି ମେଢ଼')}</span>
-            </div>
-            <p className="text-xs text-amber-950 font-medium">
-              {t('hero_highlight_2_desc', 'Pure Gold & Silver ornament crown', 'ମା\'ଙ୍କ ମଥାରେ ସୁନା ମୁକୁଟ ଓ ଚାନ୍ଦି ଅଳଙ୍କାର')}
-            </p>
-          </div>
-
-          <div className="glass-card p-4 rounded-xl border-l-4 border-l-emerald-600">
-            <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm mb-1">
-              <Tv className="w-4 h-4" />
-              <span>{language === 'en' ? 'Live Stream 24x7' : '୨୪x୭ ଲାଇଭ୍ ଦର୍ଶନ'}</span>
-            </div>
-            <p className="text-xs text-amber-950 font-medium">
-              {language === 'en' ? 'Official YouTube 4K Ultra HD' : 'ୟୁଟ୍ୟୁବ୍ ୪K HD ସ୍ପଷ୍ଟ ପ୍ରସାରଣ'}
-            </p>
-          </div>
-
-          <div className="glass-card p-4 rounded-xl border-l-4 border-l-rose-600">
-            <div className="flex items-center gap-2 text-rose-700 font-bold text-sm mb-1">
-              <ShieldAlert className="w-4 h-4" />
-              <span>{language === 'en' ? 'Smart Crowd Gauge' : 'ଗହଳି ନିୟନ୍ତ୍ରଣ'}</span>
-            </div>
-            <p className="text-xs text-amber-950 font-medium">
-              {language === 'en' ? 'Real-time wait times & gate parking status' : 'ଲାଇଭ୍ ପାର୍କିଂ ଏବଂ ପ୍ରବେଶ ସୂଚନା'}
-            </p>
-          </div>
-        </div>
-
-        <JhotiDivider className="mt-12 opacity-80" />
+        <JhotiDivider className="mt-8 opacity-80" />
 
       </div>
     </section>

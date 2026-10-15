@@ -63,15 +63,15 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
     key: 'hero_top_badge',
     section: 'hero',
     label: 'Hero Top Golden Badge',
-    textEn: 'Bhubaneswar Premier Durga Puja Extravaganza',
-    defaultOr: 'ଭୁବନେଶ୍ୱରର ସର୍ବଶ୍ରେଷ୍ଠ ଦୁର୍ଗା ପୂଜା ମହୋତ୍ସବ'
+    textEn: 'Durga Puja 2026',
+    defaultOr: 'ଦୁର୍ଗା ପୂଜା 2026'
   },
   {
     key: 'hero_main_title',
     section: 'hero',
     label: 'Hero Main Title',
-    textEn: 'Jharapada Durga Puja 2026',
-    defaultOr: 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ୨୦୨୬'
+    textEn: 'Jharapada Durga Puja Samiti 2026',
+    defaultOr: 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ସମିତି ୨୦୨୬'
   },
   {
     key: 'hero_subtitle',
