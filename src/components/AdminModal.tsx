@@ -34,6 +34,269 @@ import {
 } from 'lucide-react';
 import { DEFAULT_TRANSLATIONS } from '../data/translations';
 
+interface CulturalProgramItem {
+  id: string;
+  time: string;
+  artistEn: string;
+  artistOr: string;
+  typeEn: string;
+  typeOr: string;
+}
+
+const CulturalProgramCard: React.FC<{
+  dayKey: string;
+  prog: CulturalProgramItem;
+  index: number;
+  onDelete: (dayKey: string, progId: string) => Promise<boolean>;
+  onUpdate: (
+    dayKey: string,
+    progId: string,
+    updated: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }
+  ) => Promise<boolean>;
+  language: 'en' | 'or';
+}> = ({ dayKey, prog, index, onDelete, onUpdate, language }) => {
+  const [time, setTime] = useState(prog.time);
+  const [typeEn, setTypeEn] = useState(prog.typeEn);
+  const [typeOr, setTypeOr] = useState(prog.typeOr);
+  const [artistEn, setArtistEn] = useState(prog.artistEn);
+  const [artistOr, setArtistOr] = useState(prog.artistOr);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  React.useEffect(() => {
+    setTime(prog.time);
+    setTypeEn(prog.typeEn);
+    setTypeOr(prog.typeOr);
+    setArtistEn(prog.artistEn);
+    setArtistOr(prog.artistOr);
+  }, [prog.id, prog.time, prog.typeEn, prog.typeOr, prog.artistEn, prog.artistOr]);
+
+  const hasUnsavedChanges =
+    time !== prog.time ||
+    typeEn !== prog.typeEn ||
+    typeOr !== prog.typeOr ||
+    artistEn !== prog.artistEn ||
+    artistOr !== prog.artistOr;
+
+  const handleSave = async () => {
+    if (!artistEn.trim()) {
+      alert('Artist / Band name in English cannot be blank!');
+      return;
+    }
+    setIsSaving(true);
+    const success = await onUpdate(dayKey, prog.id, {
+      time: time.trim() || '08:30 PM',
+      typeEn: typeEn.trim() || 'Grand Festival Musical Evening',
+      typeOr: typeOr.trim() || typeEn.trim(),
+      artistEn: artistEn.trim(),
+      artistOr: artistOr.trim() || artistEn.trim()
+    });
+    setIsSaving(false);
+    if (success !== false) {
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (confirm(`Are you sure you want to delete "${prog.artistEn}" from lineup?`)) {
+      setIsDeleting(true);
+      await onDelete(dayKey, prog.id);
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div
+      className={`bg-white p-4 rounded-2xl border-2 transition-all shadow-xs space-y-3.5 ${
+        hasUnsavedChanges
+          ? 'border-[#B8001F] ring-2 ring-[#B8001F]/20 bg-rose-50/10'
+          : 'border-amber-200 hover:border-amber-300'
+      }`}
+    >
+      <div className="flex items-center justify-between pb-2 border-b border-amber-100">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-full bg-[#B8001F] text-[#FFD700] text-xs font-black flex items-center justify-center">
+            {index + 1}
+          </span>
+          <span className="text-xs font-bold text-[#8B0000]">
+            Stage Program #{index + 1}
+          </span>
+          {hasUnsavedChanges && (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300 animate-pulse">
+              Unsaved Edits
+            </span>
+          )}
+          {saveSuccess && (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300 flex items-center gap-1 animate-fadeIn">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Saved to Supabase DB & Live Site!</span>
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-all flex items-center gap-1 text-xs font-bold cursor-pointer disabled:opacity-50"
+          title="Delete Cultural Program"
+        >
+          {isDeleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+          <span>Delete</span>
+        </button>
+      </div>
+
+      {/* Editable Inputs */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+        <div>
+          <label className="block text-[10px] font-bold text-amber-950 mb-1">
+            Show Time (e.g. 09:00 PM)
+          </label>
+          <input
+            type="text"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="w-full bg-amber-50/70 border border-amber-300 rounded-lg px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none focus:border-[#B8001F]"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-bold text-amber-950 mb-1">
+            Program Tag (English)
+          </label>
+          <input
+            type="text"
+            value={typeEn}
+            onChange={(e) => setTypeEn(e.target.value)}
+            className="w-full bg-amber-50/70 border border-amber-300 rounded-lg px-2.5 py-1.5 text-amber-950 font-medium focus:bg-white focus:outline-none focus:border-[#B8001F]"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-bold text-amber-950 mb-1">
+            Program Tag (Odia)
+          </label>
+          <input
+            type="text"
+            value={typeOr}
+            onChange={(e) => setTypeOr(e.target.value)}
+            className="w-full bg-amber-50/70 border border-amber-300 rounded-lg px-2.5 py-1.5 text-amber-950 font-medium focus:bg-white focus:outline-none focus:border-[#B8001F]"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+        <div>
+          <label className="block text-[10px] font-bold text-amber-950 mb-1">
+            Artist / Band Name (English)
+          </label>
+          <input
+            type="text"
+            value={artistEn}
+            onChange={(e) => setArtistEn(e.target.value)}
+            className="w-full bg-amber-50/70 border border-amber-300 rounded-lg px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none focus:border-[#B8001F]"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-bold text-amber-950 mb-1">
+            Artist / Band Name (Odia)
+          </label>
+          <input
+            type="text"
+            value={artistOr}
+            onChange={(e) => setArtistOr(e.target.value)}
+            className="w-full bg-amber-50/70 border border-amber-300 rounded-lg px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none focus:border-[#B8001F]"
+          />
+        </div>
+      </div>
+
+      {/* Quick Presets Buttons */}
+      <div className="pt-1">
+        <span className="block text-[10px] font-bold text-amber-900/70 mb-1">
+          Quick Preset Genres:
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            { en: 'Grand Festival Musical Evening', or: 'ମେଲୋଡି ତାରକା ସନ୍ଧ୍ୟା' },
+            { en: 'Odissi Nritya Performance', or: 'ମଙ୍ଗଳାଚରଣ ଓ ଓଡ଼ିଶୀ ନୃତ୍ୟ' },
+            { en: 'Devotional Bhajan Sandhya', or: 'ଭକ୍ତିରସାମୃତ ଭଜନ ସନ୍ଧ୍ୟା' },
+            { en: 'Rangabati Sambalpuri Folk Dance', or: 'ସମ୍ବଲପୁରୀ ନୃତ୍ୟ ଧମାକା' },
+            { en: 'Grand Fireworks & Musical Fusion', or: 'ମହା ଆତସବାଜି ଓ ସଙ୍ଗୀତ' }
+          ].map((preset, idx) => (
+            <button
+              type="button"
+              key={idx}
+              onClick={() => {
+                setTypeEn(preset.en);
+                setTypeOr(preset.or);
+              }}
+              className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-[10px] font-bold text-amber-900 hover:bg-amber-100 cursor-pointer"
+            >
+              + {preset.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Live Website Preview Card */}
+      <div className="pt-1">
+        <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-900/70 mb-1">
+          Live Website Preview:
+        </span>
+        <div className="p-3.5 rounded-xl bg-[#FFFDF8] border border-amber-300 shadow-xs">
+          <div className="flex items-center justify-between text-xs text-[#B8001F] font-bold mb-1">
+            <span>{time || '09:00 PM'}</span>
+            <span className="bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-[10px] text-amber-950 font-bold">
+              {language === 'en' ? (typeEn || 'Grand Musical Evening') : (typeOr || 'ମେଲୋଡି ସନ୍ଧ୍ୟା')}
+            </span>
+          </div>
+          <h4 className="text-base font-bold text-amber-950 font-serif-royal">
+            {language === 'en' ? (artistEn || 'Artist Name') : (artistOr || artistEn || 'କଳାକାରଙ୍କ ନାମ')}
+          </h4>
+          <p className="text-xs text-amber-900/70 mt-1 font-medium">
+            {language === 'en' ? 'Live on Main Cultural Stage Melan Padia' : 'ମେଲଣ ପଡ଼ିଆ ମୁଖ୍ୟ ସାଂସ୍କୃତିକ ମଞ୍ଚ'}
+          </p>
+        </div>
+      </div>
+
+      {/* Prominent Save Changes Button */}
+      <div className="flex items-center justify-between pt-2 border-t border-amber-100">
+        <span className="text-[11px] text-amber-900/70 font-medium">
+          {hasUnsavedChanges ? '⚠️ You have unsaved changes' : '✅ Synced with Supabase cloud database'}
+        </span>
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all ${
+            hasUnsavedChanges
+              ? 'crimson-button text-white ring-2 ring-[#B8001F]/40'
+              : 'bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300'
+          }`}
+        >
+          {isSaving ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#FFD700]" />
+              <span>Saving to Supabase Database...</span>
+            </>
+          ) : saveSuccess ? (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Saved Successfully!</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-3.5 h-3.5 text-[#FFD700]" />
+              <span>Save Changes (ସାଇତନ୍ତୁ)</span>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const AdminModal: React.FC = () => {
   const { 
     language, 
@@ -88,25 +351,30 @@ export const AdminModal: React.FC = () => {
   const [newProgArtistOr, setNewProgArtistOr] = useState('');
   const [culturalSaveMsg, setCulturalSaveMsg] = useState<string | null>(null);
   const [isAddingProgram, setIsAddingProgram] = useState(false);
+  const [isAddingProgramSubmitting, setIsAddingProgramSubmitting] = useState(false);
 
-  const handleAddCulturalProgram = (e: React.FormEvent) => {
+  const handleAddCulturalProgram = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProgArtistEn.trim()) {
       alert('Please enter Artist or Band name in English!');
       return;
     }
-    addCulturalProgram(selectedCulturalDayKey, {
+    setIsAddingProgramSubmitting(true);
+    const success = await addCulturalProgram(selectedCulturalDayKey, {
       time: newProgTime.trim() || '08:30 PM',
       artistEn: newProgArtistEn.trim(),
       artistOr: newProgArtistOr.trim() || newProgArtistEn.trim(),
-      typeEn: newProgTypeEn.trim() || 'Cultural Musical Program',
-      typeOr: newProgTypeOr.trim() || 'ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ'
+      typeEn: newProgTypeEn.trim() || 'Grand Festival Musical Evening',
+      typeOr: newProgTypeOr.trim() || 'ମେଲୋଡି ତାରକା ସନ୍ଧ୍ୟା'
     });
-    setNewProgArtistEn('');
-    setNewProgArtistOr('');
-    setIsAddingProgram(false);
-    setCulturalSaveMsg('✨ Cultural stage event added successfully!');
-    setTimeout(() => setCulturalSaveMsg(null), 3000);
+    setIsAddingProgramSubmitting(false);
+    if (success !== false) {
+      setNewProgArtistEn('');
+      setNewProgArtistOr('');
+      setIsAddingProgram(false);
+      setCulturalSaveMsg('✨ New Cultural stage event saved to Supabase & published live!');
+      setTimeout(() => setCulturalSaveMsg(null), 3500);
+    }
   };
 
   // Translation Editor state
@@ -1355,10 +1623,20 @@ export const AdminModal: React.FC = () => {
                       </button>
                       <button
                         type="submit"
-                        className="crimson-button px-4 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        disabled={isAddingProgramSubmitting}
+                        className="crimson-button px-4 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
-                        <Plus className="w-4 h-4 text-[#FFD700]" />
-                        <span>Add Event to Lineup</span>
+                        {isAddingProgramSubmitting ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin text-[#FFD700]" />
+                            <span>Saving to Database...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 text-[#FFD700]" />
+                            <span>Add Event to Lineup</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   </form>
@@ -1382,122 +1660,15 @@ export const AdminModal: React.FC = () => {
                   return (
                     <div className="space-y-4">
                       {progs.map((prog, index) => (
-                        <div key={prog.id} className="bg-white p-4 rounded-2xl border-2 border-amber-200 space-y-3 shadow-xs">
-                          <div className="flex items-center justify-between pb-2 border-b border-amber-100">
-                            <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 rounded-full bg-[#B8001F] text-[#FFD700] text-xs font-black flex items-center justify-center">
-                                {index + 1}
-                              </span>
-                              <span className="text-xs font-bold text-[#8B0000]">Stage Program #{index + 1}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm(`Are you sure you want to delete "${prog.artistEn}"?`)) {
-                                  deleteCulturalProgram(day.dayKey, prog.id);
-                                  setCulturalSaveMsg(`Deleted "${prog.artistEn}" from lineup.`);
-                                  setTimeout(() => setCulturalSaveMsg(null), 3000);
-                                }
-                              }}
-                              className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-all flex items-center gap-1 text-xs font-bold cursor-pointer"
-                              title="Delete Cultural Program"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-
-                          {/* Editable Inputs */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                            <div>
-                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Show Time</label>
-                              <input
-                                type="text"
-                                defaultValue={prog.time}
-                                onBlur={(e) => {
-                                  updateCulturalProgram(day.dayKey, prog.id, { time: e.target.value });
-                                  setCulturalSaveMsg('✨ Show time updated!');
-                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
-                                }}
-                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Program Tag (English)</label>
-                              <input
-                                type="text"
-                                defaultValue={prog.typeEn}
-                                onBlur={(e) => {
-                                  updateCulturalProgram(day.dayKey, prog.id, { typeEn: e.target.value });
-                                  setCulturalSaveMsg('✨ Program tag updated!');
-                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
-                                }}
-                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-medium focus:bg-white focus:outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Program Tag (Odia)</label>
-                              <input
-                                type="text"
-                                defaultValue={prog.typeOr}
-                                onBlur={(e) => {
-                                  updateCulturalProgram(day.dayKey, prog.id, { typeOr: e.target.value });
-                                  setCulturalSaveMsg('✨ Odia program tag updated!');
-                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
-                                }}
-                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-medium focus:bg-white focus:outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                            <div>
-                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Artist / Band Name (English)</label>
-                              <input
-                                type="text"
-                                defaultValue={prog.artistEn}
-                                onBlur={(e) => {
-                                  updateCulturalProgram(day.dayKey, prog.id, { artistEn: e.target.value });
-                                  setCulturalSaveMsg('✨ Artist name updated!');
-                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
-                                }}
-                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-amber-950 mb-0.5">Artist / Band Name (Odia)</label>
-                              <input
-                                type="text"
-                                defaultValue={prog.artistOr}
-                                onBlur={(e) => {
-                                  updateCulturalProgram(day.dayKey, prog.id, { artistOr: e.target.value });
-                                  setCulturalSaveMsg('✨ Odia artist name updated!');
-                                  setTimeout(() => setCulturalSaveMsg(null), 2500);
-                                }}
-                                className="w-full bg-amber-50/60 border border-amber-300 rounded px-2.5 py-1.5 text-amber-950 font-bold focus:bg-white focus:outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Live Website Preview Box */}
-                          <div className="pt-2">
-                            <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-900/70 mb-1">Live Website Preview:</span>
-                            <div className="p-3.5 rounded-xl bg-[#FFFDF8] border border-amber-300 shadow-xs">
-                              <div className="flex items-center justify-between text-xs text-[#B8001F] font-bold mb-1">
-                                <span>{prog.time}</span>
-                                <span className="bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-[10px] text-amber-950 font-bold">
-                                  {language === 'en' ? prog.typeEn : prog.typeOr}
-                                </span>
-                              </div>
-                              <h4 className="text-base font-bold text-amber-950 font-serif-royal">
-                                {language === 'en' ? prog.artistEn : prog.artistOr}
-                              </h4>
-                              <p className="text-xs text-amber-900/70 mt-1 font-medium">
-                                {language === 'en' ? 'Live on Main Cultural Stage Melan Padia' : 'ମେଲଣ ପଡ଼ିଆ ମୁଖ୍ୟ ସାଂସ୍କୃତିକ ମଞ୍ଚ'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        <CulturalProgramCard
+                          key={prog.id}
+                          dayKey={day.dayKey}
+                          prog={prog}
+                          index={index}
+                          onDelete={deleteCulturalProgram}
+                          onUpdate={updateCulturalProgram}
+                          language={language}
+                        />
                       ))}
                     </div>
                   );

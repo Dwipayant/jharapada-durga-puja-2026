@@ -116,9 +116,9 @@ interface AppContextType {
   // Rituals & Cultural Programs
   rituals: DailyRitual[];
   updateRitualEvent: (dayKey: string, eventId: string, updatedTime: string, updatedTitleEn: string, updatedTitleOr: string) => void;
-  updateCulturalProgram: (dayKey: string, programId: string, updated: Partial<{ time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }>) => void;
-  addCulturalProgram: (dayKey: string, program: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }) => void;
-  deleteCulturalProgram: (dayKey: string, programId: string) => void;
+  updateCulturalProgram: (dayKey: string, programId: string, updated: Partial<{ time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }>) => Promise<boolean>;
+  addCulturalProgram: (dayKey: string, program: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }) => Promise<boolean>;
+  deleteCulturalProgram: (dayKey: string, programId: string) => Promise<boolean>;
 
   // Passes
   passes: DigitalPass[];
@@ -337,7 +337,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (dbCrowd) setCrowdStatus(dbCrowd);
 
       const dbRituals = await fetchRitualsFromSupabase();
-      if (dbRituals && dbRituals.length > 0) setRituals(dbRituals);
+      if (dbRituals && dbRituals.length > 0) {
+        setRituals(dbRituals);
+        try {
+          localStorage.setItem('jpuja_rituals_2026', JSON.stringify(dbRituals));
+        } catch {}
+      }
 
       const dbStalls = await fetchStallsFromSupabase();
       if (dbStalls && dbStalls.length > 0) setStalls(dbStalls);
@@ -597,17 +602,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Ritual update
   const updateRitualEvent = (dayKey: string, eventId: string, updatedTime: string, updatedTitleEn: string, updatedTitleOr: string) => {
+    let targetDay: DailyRitual | undefined;
+    let newEvents: any[] = [];
     setRituals(prev => {
       const updated = prev.map(day => {
         if (day.dayKey === dayKey) {
-          const newEvents = day.events.map(ev => ev.id === eventId ? {
+          newEvents = day.events.map(ev => ev.id === eventId ? {
             ...ev,
             time: updatedTime,
             titleEn: updatedTitleEn,
             titleOr: updatedTitleOr
           } : ev);
-          updateRitualInSupabase(dayKey, newEvents);
-          return { ...day, events: newEvents };
+          targetDay = { ...day, events: newEvents };
+          return targetDay;
         }
         return day;
       });
@@ -616,16 +623,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return updated;
     });
+    if (targetDay) {
+      updateRitualInSupabase(dayKey, newEvents, targetDay);
+    }
   };
 
   // Cultural program updates
-  const updateCulturalProgram = (dayKey: string, programId: string, updatedData: Partial<{ time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }>) => {
+  const updateCulturalProgram = async (
+    dayKey: string,
+    programId: string,
+    updatedData: Partial<{ time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }>
+  ): Promise<boolean> => {
+    let targetDay: DailyRitual | undefined;
+    let newPrograms: any[] = [];
     setRituals(prev => {
       const updatedList = prev.map(day => {
         if (day.dayKey === dayKey) {
-          const newPrograms = day.culturalPrograms.map(prog => prog.id === programId ? { ...prog, ...updatedData } : prog);
-          updateCulturalProgramsInSupabase(dayKey, newPrograms);
-          return { ...day, culturalPrograms: newPrograms };
+          newPrograms = day.culturalPrograms.map(prog => prog.id === programId ? { ...prog, ...updatedData } : prog);
+          targetDay = { ...day, culturalPrograms: newPrograms };
+          return targetDay;
         }
         return day;
       });
@@ -634,9 +650,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return updatedList;
     });
+
+    if (targetDay) {
+      return await updateCulturalProgramsInSupabase(dayKey, newPrograms, targetDay);
+    }
+    return true;
   };
 
-  const addCulturalProgram = (dayKey: string, program: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }) => {
+  const addCulturalProgram = async (
+    dayKey: string,
+    program: { time: string; artistEn: string; artistOr: string; typeEn: string; typeOr: string }
+  ): Promise<boolean> => {
+    let targetDay: DailyRitual | undefined;
+    let newPrograms: any[] = [];
     setRituals(prev => {
       const updatedList = prev.map(day => {
         if (day.dayKey === dayKey) {
@@ -644,9 +670,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: 'c-' + Date.now(),
             ...program
           };
-          const newPrograms = [...day.culturalPrograms, newProgram];
-          updateCulturalProgramsInSupabase(dayKey, newPrograms);
-          return { ...day, culturalPrograms: newPrograms };
+          newPrograms = [...day.culturalPrograms, newProgram];
+          targetDay = { ...day, culturalPrograms: newPrograms };
+          return targetDay;
         }
         return day;
       });
@@ -655,15 +681,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return updatedList;
     });
+
+    if (targetDay) {
+      return await updateCulturalProgramsInSupabase(dayKey, newPrograms, targetDay);
+    }
+    return true;
   };
 
-  const deleteCulturalProgram = (dayKey: string, programId: string) => {
+  const deleteCulturalProgram = async (dayKey: string, programId: string): Promise<boolean> => {
+    let targetDay: DailyRitual | undefined;
+    let newPrograms: any[] = [];
     setRituals(prev => {
       const updatedList = prev.map(day => {
         if (day.dayKey === dayKey) {
-          const newPrograms = day.culturalPrograms.filter(prog => prog.id !== programId);
-          updateCulturalProgramsInSupabase(dayKey, newPrograms);
-          return { ...day, culturalPrograms: newPrograms };
+          newPrograms = day.culturalPrograms.filter(prog => prog.id !== programId);
+          targetDay = { ...day, culturalPrograms: newPrograms };
+          return targetDay;
         }
         return day;
       });
@@ -672,6 +705,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return updatedList;
     });
+
+    if (targetDay) {
+      return await updateCulturalProgramsInSupabase(dayKey, newPrograms, targetDay);
+    }
+    return true;
   };
 
   // Create Pass with verifiable URL in QR code

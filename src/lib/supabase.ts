@@ -310,29 +310,65 @@ export const fetchRitualsFromSupabase = async (): Promise<DailyRitual[] | null> 
 };
 
 /** Update Ritual Events in Supabase DB */
-export const updateRitualInSupabase = async (dayKey: string, events: any[]): Promise<boolean> => {
+export const updateRitualInSupabase = async (dayKey: string, events: any[], fullDay?: any): Promise<boolean> => {
   if (!isSupabaseConfigured() || !supabase) return false;
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('rituals')
       .update({ events })
-      .eq('day_key', dayKey);
+      .eq('day_key', dayKey)
+      .select();
+
+    if (!error && data && data.length > 0) return true;
+
+    if (fullDay) {
+      const { error: upsertErr } = await supabase.from('rituals').upsert([{
+        id: fullDay.id,
+        day_key: fullDay.dayKey,
+        day_title_en: fullDay.dayTitleEn,
+        day_title_or: fullDay.dayTitleOr,
+        date: fullDay.date,
+        events: events,
+        cultural_programs: fullDay.culturalPrograms || []
+      }], { onConflict: 'day_key' });
+      return !upsertErr;
+    }
+
     return !error;
-  } catch {
+  } catch (err) {
+    console.error('Error updating ritual in Supabase:', err);
     return false;
   }
 };
 
 /** Update Cultural Programs in Supabase DB */
-export const updateCulturalProgramsInSupabase = async (dayKey: string, culturalPrograms: any[]): Promise<boolean> => {
+export const updateCulturalProgramsInSupabase = async (dayKey: string, culturalPrograms: any[], fullDay?: any): Promise<boolean> => {
   if (!isSupabaseConfigured() || !supabase) return false;
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('rituals')
       .update({ cultural_programs: culturalPrograms })
-      .eq('day_key', dayKey);
+      .eq('day_key', dayKey)
+      .select();
+
+    if (!error && data && data.length > 0) return true;
+
+    if (fullDay) {
+      const { error: upsertErr } = await supabase.from('rituals').upsert([{
+        id: fullDay.id,
+        day_key: fullDay.dayKey,
+        day_title_en: fullDay.dayTitleEn,
+        day_title_or: fullDay.dayTitleOr,
+        date: fullDay.date,
+        events: fullDay.events || [],
+        cultural_programs: culturalPrograms
+      }], { onConflict: 'day_key' });
+      return !upsertErr;
+    }
+
     return !error;
-  } catch {
+  } catch (err) {
+    console.error('Error updating cultural programs in Supabase:', err);
     return false;
   }
 };
