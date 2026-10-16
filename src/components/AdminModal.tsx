@@ -765,7 +765,7 @@ export const AdminModal: React.FC = () => {
                   type="text"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="e.g. admin or gate_security"
+                  placeholder="Enter admin username"
                   className="w-full bg-white border border-amber-300 rounded-xl px-4 py-2.5 text-sm text-amber-950 focus:outline-none focus:border-[#B8001F] font-medium shadow-xs"
                   required
                   autoFocus
@@ -781,7 +781,7 @@ export const AdminModal: React.FC = () => {
                   type="password"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Enter password (e.g. admin2026)"
+                  placeholder="Enter your password"
                   className="w-full bg-white border border-amber-300 rounded-xl px-4 py-2.5 text-sm text-amber-950 focus:outline-none focus:border-[#B8001F] font-medium shadow-xs"
                   required
                 />
@@ -804,21 +804,6 @@ export const AdminModal: React.FC = () => {
                   </>
                 )}
               </button>
-
-              <div className="p-3 bg-amber-50/90 rounded-xl border border-amber-200 text-[11px] text-amber-950 text-left space-y-1.5 mt-2">
-                <div className="font-bold text-[#8B0000] flex items-center gap-1">
-                  <Database className="w-3 h-3 text-[#B8001F]" />
-                  <span>Supabase Database Configured Accounts:</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-amber-900">Puja Admin:</span>
-                  <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-300">admin / admin2026</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-amber-900">Gate Security:</span>
-                  <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-300">gate_security / gate2026</span>
-                </div>
-              </div>
             </form>
           </div>
         ) : (
