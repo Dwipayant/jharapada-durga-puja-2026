@@ -1,9 +1,21 @@
 -- ==============================================================================
--- JHARAPADA DURGA PUJA 2026 - COMPLETE SUPABASE POSTGRES DATABASE SCHEMA
+-- JHARAPADA DURGA PUJA 2026 - SUPABASE POSTGRES DATABASE SCHEMA & MIGRATIONS
 -- ==============================================================================
--- Run this complete script in Supabase Dashboard -> SQL Editor
--- This creates all 10 tables, sets up Row Level Security (RLS) policies,
--- and seeds the initial dataset from mockData.ts so everything operates live on Supabase DB.
+-- 🚀 QUICK MIGRATION FOR EXISTING SUPABASE INSTANCES:
+-- If you already have tables and just need to enable Day 1-4 & Subcategories:
+-- Run these 3 lines in Supabase Dashboard -> SQL Editor:
+--
+-- ALTER TABLE public.gallery DROP CONSTRAINT IF EXISTS gallery_category_check;
+-- ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS subcategory TEXT;
+-- ALTER TABLE public.gallery ADD CONSTRAINT gallery_category_check 
+--   CHECK (category IN (
+--     'day1', 'day2', 'day3', 'day4', 
+--     'bhasani', 'emergency', 'minabazar', 
+--     'pandal', 'idol', 'lights', 'celebrities'
+--   ));
+-- ==============================================================================
+-- FULL FRESH SETUP (OPTIONAL):
+-- If resetting the complete database from scratch, run below:
 -- ==============================================================================
 
 -- DROP EXISTING TABLES TO RESET INCOMPATIBLE COLUMN TYPES (e.g. UUID vs TEXT)
