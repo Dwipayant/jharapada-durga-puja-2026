@@ -34,6 +34,7 @@ import {
   deleteHistoryStoryFromSupabase,
   insertPassToSupabase,
   fetchPassesFromSupabase,
+  updatePassStatusInSupabase,
   insertDonationToSupabase,
   fetchDonationsFromSupabase,
   fetchTickersFromSupabase,
@@ -123,6 +124,7 @@ interface AppContextType {
   // Passes
   passes: DigitalPass[];
   createPass: (pass: Omit<DigitalPass, 'id' | 'qrCodeValue' | 'status' | 'createdAt'>) => DigitalPass;
+  updatePassStatus: (id: string, status: DigitalPass['status']) => Promise<boolean>;
 
   // Donations & UPI Config
   donations: DonationRecord[];
@@ -223,7 +225,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [gallery, setGallery] = useState<GalleryMedia[]>(() => {
     try {
-      const saved = localStorage.getItem('jpuja_gallery_2026');
+      const saved = localStorage.getItem('jpuja_gallery_2026_v2');
       if (saved) {
         const parsed: GalleryMedia[] = JSON.parse(saved);
         const existingIds = new Set(parsed.map(p => p.id));
@@ -455,7 +457,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Save gallery to localStorage on update
   React.useEffect(() => {
     try {
-      localStorage.setItem('jpuja_gallery_2026', JSON.stringify(gallery));
+      localStorage.setItem('jpuja_gallery_2026_v2', JSON.stringify(gallery));
     } catch (err) {
       console.warn('Failed to persist gallery to localStorage:', err);
     }
@@ -731,6 +733,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newPass;
   };
 
+  // Update Pass Status (e.g. Approved, Inactive, Used)
+  const updatePassStatus = async (id: string, status: DigitalPass['status']): Promise<boolean> => {
+    setPasses(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+    return await updatePassStatusInSupabase(id, status);
+  };
+
   // Create Donation
   const createDonation = (donationData: Omit<DonationRecord, 'id' | 'date' | 'receiptNumber'>): DonationRecord => {
     const id = 'DON-' + Date.now();
@@ -844,6 +852,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       deleteCulturalProgram,
       passes,
       createPass,
+      updatePassStatus,
       donations,
       createDonation,
       upiId,

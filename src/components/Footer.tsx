@@ -9,12 +9,12 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-[#FFF5E5] text-amber-950 pt-12 pb-8 border-t-2 border-[#D4AF37]/50 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Top Jhoti Motif */}
         <JhotiDivider className="mb-8 opacity-80" />
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          
+
           {/* Col 1: Brand Info */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -25,7 +25,7 @@ export const Footer: React.FC = () => {
             </div>
             <p className="text-xs text-amber-950/80 font-medium leading-relaxed">
               {language === 'en'
-                ? 'Jharapada Durga Puja Samitee, Bhubaneswar, Odisha. Bringing devotion, heritage, and royal fort illuminations since 1976.'
+                ? 'Jharapada Durga Puja Samitee, Bhubaneswar, Odisha. Bringing devotion, heritage, and royal fort illuminations since 2025.'
                 : 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ସମିତି, ଭୁବନେଶ୍ୱର । ପରମ୍ପରା, ସଂସ୍କୃତି ଓ ଭକ୍ତିର ଅପୂର୍ବ ମିଳନ ।'}
             </p>
             <div className="flex items-center gap-3 pt-2">

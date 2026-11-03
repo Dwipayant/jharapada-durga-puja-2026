@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import type { DigitalPass, DonationRecord } from '../types';
+import { IS_VIP_PASS_BOOKING_ACTIVE } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
 import confetti from 'canvas-confetti';
 import { verifyNpciUtr } from '../utils/upiVerification';
@@ -199,50 +200,67 @@ export const PassesAndDonation: React.FC = () => {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 no-print">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-[#B8001F] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-            <Sparkles className="w-4 h-4 text-[#B8001F]" />
-            <span>{language === 'en' ? 'Digital Passes & E-Donation Portal' : 'ଇ-ପାସ୍ ଓ ଅନଲାଇନ୍ ଦାନ'}</span>
+            {IS_VIP_PASS_BOOKING_ACTIVE ? (
+              <>
+                <Sparkles className="w-4 h-4 text-[#B8001F]" />
+                <span>{language === 'en' ? 'Digital Passes & E-Donation Portal' : 'ଇ-ପାସ୍ ଓ ଅନଲାଇନ୍ ଦାନ'}</span>
+              </>
+            ) : (
+              <>
+                <Heart className="w-4 h-4 text-[#B8001F] fill-[#B8001F]" />
+                <span>{language === 'en' ? 'Devotee E-Donation Portal' : 'ଅନଲାଇନ୍ ସେବା ଦାନ ପୋର୍ଟାଲ୍'}</span>
+              </>
+            )}
           </div>
           <h2 className="text-3xl sm:text-5xl font-bold font-serif-royal royal-gold-heading mb-3">
-            {language === 'en' ? 'VIP QR Pass & Online E-Donations' : 'VIP ଇ-ପାସ୍ ଓ ଅନଲାଇନ୍ ସେବା ଦାନ'}
+            {IS_VIP_PASS_BOOKING_ACTIVE
+              ? (language === 'en' ? 'VIP QR Pass & Online E-Donations' : 'VIP ଇ-ପାସ୍ ଓ ଅନଲାଇନ୍ ସେବା ଦାନ')
+              : (language === 'en' ? 'Online E-Donations & Seva' : 'ଅନଲାଇନ୍ ସେବା ଦାନ')}
           </h2>
           <p className="text-amber-950/80 text-sm sm:text-base font-medium">
-            {language === 'en'
-              ? 'Get instant fast-track QR passes for Senior Citizens/VIPs or contribute to Bhog Seva with instant 80G e-Receipt.'
-              : 'ବରିଷ୍ଠ ନାଗରିକଙ୍କ ପାଇଁ ତୁରନ୍ତ ଇ-ପାସ୍ ସୃଷ୍ଟି କରନ୍ତୁ ଏବଂ ଅନଲାଇନ୍ ମାଧ୍ୟମରେ ମହାପ୍ରସାଦ ସେବା ଦାନ କରନ୍ତୁ ।'}
+            {IS_VIP_PASS_BOOKING_ACTIVE
+              ? (language === 'en'
+                ? 'Get instant fast-track QR passes for Senior Citizens/VIPs or contribute to Bhog Seva with instant 80G e-Receipt.'
+                : 'ବରିଷ୍ଠ ନାଗରିକଙ୍କ ପାଇଁ ତୁରନ୍ତ ଇ-ପାସ୍ ସୃଷ୍ଟି କରନ୍ତୁ ଏବଂ ଅନଲାଇନ୍ ମାଧ୍ୟମରେ ମହାପ୍ରସାଦ ସେବା ଦାନ କରନ୍ତୁ ।')
+              : (language === 'en'
+                ? 'Contribute directly to Bhog Seva, Annadanam, Lighting & Temple Welfare with instant 80G e-Receipt & live UTR confirmation.'
+                : 'ମହାପ୍ରସାଦ ଭୋଗ ସେବା, ଅନ୍ନଦାନ ଓ ପୂଜା ନିମନ୍ତେ ଅନଲାଇନ୍ ମାଧ୍ୟମରେ ଦାନ କରନ୍ତୁ ଏବଂ ୮୦G ଇ-ରସିଦ ହାସଲ କରନ୍ତୁ ।')}
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex justify-center mb-10 no-print">
-          <div className="glass-card p-1.5 rounded-2xl flex items-center gap-2 shadow-md">
-            <button
-              onClick={() => setActiveTab('pass')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
-                activeTab === 'pass'
-                  ? 'crimson-button text-white shadow-md'
-                  : 'text-amber-950 hover:bg-amber-100/60'
-              }`}
-            >
-              <Ticket className="w-4 h-4 text-[#FFD700]" />
-              <span>{t('pass_tab_title', 'Get Express QR Pass', 'ଇ-ପାସ୍ ହାସଲ କରନ୍ତୁ')}</span>
-            </button>
+        {/* Tab Switcher - Shown only when pass booking is active */}
+        {IS_VIP_PASS_BOOKING_ACTIVE && (
+          <div className="flex justify-center mb-10 no-print">
+            <div className="glass-card p-1.5 rounded-2xl flex items-center gap-2 shadow-md">
+              <button
+                onClick={() => setActiveTab('pass')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'pass'
+                    ? 'crimson-button text-white shadow-md'
+                    : 'text-amber-950 hover:bg-amber-100/60'
+                }`}
+              >
+                <Ticket className="w-4 h-4 text-[#FFD700]" />
+                <span>{t('pass_tab_title', 'Get Express QR Pass', 'ଇ-ପାସ୍ ହାସଲ କରନ୍ତୁ')}</span>
+              </button>
 
-            <button
-              onClick={() => setActiveTab('donation')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
-                activeTab === 'donation'
-                  ? 'crimson-button text-white shadow-md'
-                  : 'text-amber-950 hover:bg-amber-100/60'
-              }`}
-            >
-              <Heart className="w-4 h-4 fill-current text-rose-300" />
-              <span>{t('donation_tab_title', 'Instant E-Donation', 'ଅନଲାଇନ୍ ଦାନ')}</span>
-            </button>
+              <button
+                onClick={() => setActiveTab('donation')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'donation'
+                    ? 'crimson-button text-white shadow-md'
+                    : 'text-amber-950 hover:bg-amber-100/60'
+                }`}
+              >
+                <Heart className="w-4 h-4 fill-current text-rose-300" />
+                <span>{t('donation_tab_title', 'Instant E-Donation', 'ଅନଲାଇନ୍ ଦାନ')}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* PASS TAB */}
-        {activeTab === 'pass' && (
+        {/* PASS TAB - Protected by IS_VIP_PASS_BOOKING_ACTIVE */}
+        {IS_VIP_PASS_BOOKING_ACTIVE && activeTab === 'pass' && (
           <div className="pass-grid-container grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Pass Registration Form */}

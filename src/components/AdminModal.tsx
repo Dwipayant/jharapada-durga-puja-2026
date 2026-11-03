@@ -1,18 +1,18 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { isSupabaseConfigured, uploadGalleryImageToSupabase, testSupabaseConnection } from '../lib/supabase';
-import { 
-  ShieldCheck, 
-  X, 
-  Tv, 
-  Radio, 
-  Users, 
-  Clock, 
-  Upload, 
-  Plus, 
-  Trash2, 
-  CheckCircle2, 
-  BarChart2, 
+import {
+  ShieldCheck,
+  X,
+  Tv,
+  Radio,
+  Users,
+  Clock,
+  Upload,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  BarChart2,
   Lock,
   Car,
   FolderPlus,
@@ -33,6 +33,7 @@ import {
   Music
 } from 'lucide-react';
 import { DEFAULT_TRANSLATIONS } from '../data/translations';
+import type { GalleryCategory, GalleryDaySubcategory } from '../types';
 
 interface CulturalProgramItem {
   id: string;
@@ -109,11 +110,10 @@ const CulturalProgramCard: React.FC<{
 
   return (
     <div
-      className={`bg-white p-4 rounded-2xl border-2 transition-all shadow-xs space-y-3.5 ${
-        hasUnsavedChanges
-          ? 'border-[#B8001F] ring-2 ring-[#B8001F]/20 bg-rose-50/10'
-          : 'border-amber-200 hover:border-amber-300'
-      }`}
+      className={`bg-white p-4 rounded-2xl border-2 transition-all shadow-xs space-y-3.5 ${hasUnsavedChanges
+        ? 'border-[#B8001F] ring-2 ring-[#B8001F]/20 bg-rose-50/10'
+        : 'border-amber-200 hover:border-amber-300'
+        }`}
     >
       <div className="flex items-center justify-between pb-2 border-b border-amber-100">
         <div className="flex items-center gap-2">
@@ -269,11 +269,10 @@ const CulturalProgramCard: React.FC<{
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all ${
-            hasUnsavedChanges
-              ? 'crimson-button text-white ring-2 ring-[#B8001F]/40'
-              : 'bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300'
-          }`}
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all ${hasUnsavedChanges
+            ? 'crimson-button text-white ring-2 ring-[#B8001F]/40'
+            : 'bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300'
+            }`}
         >
           {isSaving ? (
             <>
@@ -298,16 +297,16 @@ const CulturalProgramCard: React.FC<{
 };
 
 export const AdminModal: React.FC = () => {
-  const { 
-    language, 
-    isAdminLoggedIn, 
+  const {
+    language,
+    isAdminLoggedIn,
     adminUser,
     loginAdminWithCredentials,
     logoutAdmin,
     passScans,
     scanPassEntry,
     setIsCameraScannerOpen,
-    isAdminModalOpen, 
+    isAdminModalOpen,
     setIsAdminModalOpen,
     liveConfig,
     updateLiveConfig,
@@ -341,7 +340,7 @@ export const AdminModal: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [adminTab, setAdminTab] = useState<'stream' | 'ticker' | 'crowd' | 'rituals' | 'cultural' | 'upload' | 'history' | 'analytics' | 'scanner' | 'translations'>('translations');
-  
+
   // Cultural Programs Editor state
   const [selectedCulturalDayKey, setSelectedCulturalDayKey] = useState<string>('ashtami');
   const [newProgTime, setNewProgTime] = useState('08:30 PM');
@@ -424,7 +423,9 @@ export const AdminModal: React.FC = () => {
   const [uploadTitleOr, setUploadTitleOr] = useState('');
   const [uploadType, setUploadType] = useState<'image' | 'video'>('image');
   const [uploadYear, setUploadYear] = useState<number>(2026);
-  const [uploadCategory, setUploadCategory] = useState<'pandal' | 'idol' | 'lights' | 'celebrities' | 'bhasani'>('pandal');
+  const [uploadCategory, setUploadCategory] = useState<GalleryCategory>('day1');
+  const [uploadSubCategory, setUploadSubCategory] = useState<GalleryDaySubcategory>('vip');
+  const [adminMediaFilter, setAdminMediaFilter] = useState<'all' | GalleryCategory>('all');
   const [uploadUrl, setUploadUrl] = useState('');
   const [uploadThumbnailUrl, setUploadThumbnailUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('');
@@ -435,7 +436,7 @@ export const AdminModal: React.FC = () => {
   const [uploadErrorMsg, setUploadErrorMsg] = useState('');
   const [isTestingSupabase, setIsTestingSupabase] = useState(false);
   const [diagnosticResult, setDiagnosticResult] = useState<{ success: boolean; message: string } | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!isAdminModalOpen) return null;
@@ -578,10 +579,12 @@ export const AdminModal: React.FC = () => {
       alert('Please select a photo/video file or enter a media URL!');
       return;
     }
+    const isDay = ['day1', 'day2', 'day3', 'day4'].includes(uploadCategory);
     addGalleryItem({
       titleEn: uploadTitleEn,
       titleOr: uploadTitleOr || uploadTitleEn,
       category: uploadCategory,
+      subCategory: isDay ? uploadSubCategory : undefined,
       year: Number(uploadYear) || 2026,
       type: uploadType,
       url: uploadUrl,
@@ -687,7 +690,7 @@ export const AdminModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn">
       <div className="glass-card-gold p-6 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#D4AF37] shadow-2xl relative">
-        
+
         {/* Header Bar */}
         <div className="flex items-center justify-between pb-4 border-b border-amber-200 mb-6">
           <div className="flex items-center gap-2">
@@ -809,16 +812,15 @@ export const AdminModal: React.FC = () => {
         ) : (
           /* AUTHENTICATED DASHBOARD */
           <div>
-            
+
             {/* Dashboard Sub-Tabs */}
             <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 border-b border-amber-200 text-xs font-bold">
               <button
                 onClick={() => setAdminTab('scanner')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'scanner' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'scanner'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <QrCode className="w-4 h-4 text-[#FFD700]" />
                 <span>Gate VIP Scanner & Entries ({passScans.length})</span>
@@ -826,11 +828,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('stream')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'stream' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'stream'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Tv className="w-4 h-4" />
                 <span>Live Streams</span>
@@ -838,11 +839,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('ticker')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'ticker' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'ticker'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Radio className="w-4 h-4" />
                 <span>Live Tickers ({tickers.length})</span>
@@ -850,11 +850,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('crowd')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'crowd' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'crowd'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Users className="w-4 h-4" />
                 <span>Crowd & Parking</span>
@@ -862,11 +861,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('rituals')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'rituals' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'rituals'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Clock className="w-4 h-4" />
                 <span>Ritual Schedule</span>
@@ -874,11 +872,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('cultural')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'cultural' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'cultural'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Music className="w-4 h-4 text-[#FFD700]" />
                 <span>Cultural Stage ({rituals.reduce((acc, r) => acc + (r.culturalPrograms?.length || 0), 0)})</span>
@@ -886,11 +883,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('upload')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'upload' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'upload'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Upload className="w-4 h-4" />
                 <span>Browse File & Upload</span>
@@ -898,11 +894,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('history')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'history' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'history'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <BookOpen className="w-4 h-4" />
                 <span>Press & History ({historyStories.length})</span>
@@ -910,11 +905,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('translations')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'translations' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'translations'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <Languages className="w-4 h-4" />
                 <span>Odia (ଓଡ଼ିଆ) Editor</span>
@@ -922,11 +916,10 @@ export const AdminModal: React.FC = () => {
 
               <button
                 onClick={() => setAdminTab('analytics')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${
-                  adminTab === 'analytics' 
-                    ? 'crimson-button text-white font-extrabold border border-[#FFD700]' 
-                    : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                }`}
+                className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-xs ${adminTab === 'analytics'
+                  ? 'crimson-button text-white font-extrabold border border-[#FFD700]'
+                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                  }`}
               >
                 <BarChart2 className="w-4 h-4" />
                 <span>Analytics</span>
@@ -1215,7 +1208,7 @@ export const AdminModal: React.FC = () => {
             {/* TAB 2: LIVE TICKER MANAGER */}
             {adminTab === 'ticker' && (
               <div className="space-y-6">
-                
+
                 {/* Add New Ticker Form */}
                 <form onSubmit={handleAddTickerSubmit} className="bg-amber-50/90 p-4 rounded-xl border border-amber-200 space-y-3 shadow-xs">
                   <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-1.5">
@@ -1266,9 +1259,8 @@ export const AdminModal: React.FC = () => {
                   {tickers.map((t) => (
                     <div key={t.id} className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between gap-2 shadow-xs">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          t.type === 'EMERGENCY' ? 'bg-red-600 text-white' : t.type === 'IMPORTANT' ? 'bg-amber-400 text-amber-950' : 'bg-blue-600 text-white'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${t.type === 'EMERGENCY' ? 'bg-red-600 text-white' : t.type === 'IMPORTANT' ? 'bg-amber-400 text-amber-950' : 'bg-blue-600 text-white'
+                          }`}>
                           {t.type}
                         </span>
                         <span className="text-xs text-amber-950 font-medium">{t.textEn}</span>
@@ -1277,9 +1269,8 @@ export const AdminModal: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => toggleTickerStatus(t.id)}
-                          className={`px-2.5 py-1 rounded text-[10px] font-bold ${
-                            t.active ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'
-                          }`}
+                          className={`px-2.5 py-1 rounded text-[10px] font-bold ${t.active ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'
+                            }`}
                         >
                           {t.active ? 'ACTIVE' : 'PAUSED'}
                         </button>
@@ -1301,7 +1292,7 @@ export const AdminModal: React.FC = () => {
             {/* TAB 3: CROWD DENSITY & PARKING */}
             {adminTab === 'crowd' && (
               <div className="space-y-6">
-                
+
                 {/* 1-Click Level Selector */}
                 <div>
                   <label className="block text-xs font-bold text-amber-950 mb-2">
@@ -1310,11 +1301,10 @@ export const AdminModal: React.FC = () => {
                   <div className="grid grid-cols-3 gap-3">
                     <button
                       onClick={() => updateCrowdStatus({ level: 'normal', waitTimeMins: 10 })}
-                      className={`p-4 rounded-xl border text-center transition-all ${
-                        crowdStatus.level === 'normal'
-                          ? 'bg-emerald-600 text-white border-emerald-500 ring-2 ring-emerald-400'
-                          : 'bg-white border-amber-200 text-amber-950 hover:bg-amber-50'
-                      }`}
+                      className={`p-4 rounded-xl border text-center transition-all ${crowdStatus.level === 'normal'
+                        ? 'bg-emerald-600 text-white border-emerald-500 ring-2 ring-emerald-400'
+                        : 'bg-white border-amber-200 text-amber-950 hover:bg-amber-50'
+                        }`}
                     >
                       <div className="text-base font-bold">🟢 Normal Crowd</div>
                       <div className="text-xs opacity-90 font-medium">Wait time &lt; 15 mins</div>
@@ -1322,11 +1312,10 @@ export const AdminModal: React.FC = () => {
 
                     <button
                       onClick={() => updateCrowdStatus({ level: 'moderate', waitTimeMins: 25 })}
-                      className={`p-4 rounded-xl border text-center transition-all ${
-                        crowdStatus.level === 'moderate'
-                          ? 'bg-amber-500 text-amber-950 font-bold border-amber-600 ring-2 ring-amber-400'
-                          : 'bg-white border-amber-200 text-amber-950 hover:bg-amber-50'
-                      }`}
+                      className={`p-4 rounded-xl border text-center transition-all ${crowdStatus.level === 'moderate'
+                        ? 'bg-amber-500 text-amber-950 font-bold border-amber-600 ring-2 ring-amber-400'
+                        : 'bg-white border-amber-200 text-amber-950 hover:bg-amber-50'
+                        }`}
                     >
                       <div className="text-base font-bold">🟡 Moderate Surge</div>
                       <div className="text-xs opacity-90 font-medium">Wait time 15-30 mins</div>
@@ -1334,11 +1323,10 @@ export const AdminModal: React.FC = () => {
 
                     <button
                       onClick={() => updateCrowdStatus({ level: 'heavy', waitTimeMins: 50 })}
-                      className={`p-4 rounded-xl border text-center transition-all ${
-                        crowdStatus.level === 'heavy'
-                          ? 'bg-red-600 text-white border-red-500 ring-2 ring-red-400'
-                          : 'bg-white border-amber-200 text-amber-950 hover:bg-amber-50'
-                      }`}
+                      className={`p-4 rounded-xl border text-center transition-all ${crowdStatus.level === 'heavy'
+                        ? 'bg-red-600 text-white border-red-500 ring-2 ring-red-400'
+                        : 'bg-white border-amber-200 text-amber-950 hover:bg-amber-50'
+                        }`}
                     >
                       <div className="text-base font-bold">🔴 Heavy Surge</div>
                       <div className="text-xs opacity-90 font-medium">Wait time &gt; 45 mins</div>
@@ -1484,16 +1472,14 @@ export const AdminModal: React.FC = () => {
                         key={r.dayKey}
                         type="button"
                         onClick={() => setSelectedCulturalDayKey(r.dayKey)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 cursor-pointer ${
-                          selectedCulturalDayKey === r.dayKey
-                            ? 'bg-[#B8001F] text-white border-[#B8001F] shadow-sm'
-                            : 'bg-white text-amber-950 border-amber-300 hover:bg-amber-100/60'
-                        }`}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 cursor-pointer ${selectedCulturalDayKey === r.dayKey
+                          ? 'bg-[#B8001F] text-white border-[#B8001F] shadow-sm'
+                          : 'bg-white text-amber-950 border-amber-300 hover:bg-amber-100/60'
+                          }`}
                       >
                         <span>{r.dayTitleEn}</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                          selectedCulturalDayKey === r.dayKey ? 'bg-white text-[#B8001F]' : 'bg-amber-200 text-amber-950'
-                        }`}>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${selectedCulturalDayKey === r.dayKey ? 'bg-white text-[#B8001F]' : 'bg-amber-200 text-amber-950'
+                          }`}>
                           {count}
                         </span>
                       </button>
@@ -1665,17 +1651,16 @@ export const AdminModal: React.FC = () => {
             {adminTab === 'upload' && (
               <div className="space-y-6">
                 {/* Supabase Storage Status Header */}
-                <div className={`p-3 rounded-xl border text-xs flex flex-col gap-2 ${
-                  isSupabaseConfigured() 
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950' 
-                    : 'bg-amber-50 border-amber-300 text-amber-950'
-                }`}>
+                <div className={`p-3 rounded-xl border text-xs flex flex-col gap-2 ${isSupabaseConfigured()
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                  : 'bg-amber-50 border-amber-300 text-amber-950'
+                  }`}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2 font-bold">
                       <Database className="w-4 h-4 text-[#B8001F]" />
                       <span>
-                        {isSupabaseConfigured() 
-                          ? '🟢 Supabase Cloud Storage: Configured' 
+                        {isSupabaseConfigured()
+                          ? '🟢 Supabase Cloud Storage: Configured'
                           : '⚡ Supabase Credentials Missing in .env'}
                       </span>
                     </div>
@@ -1694,11 +1679,10 @@ export const AdminModal: React.FC = () => {
                   </div>
 
                   {diagnosticResult && (
-                    <div className={`p-2 rounded text-[11px] font-medium border ${
-                      diagnosticResult.success 
-                        ? 'bg-emerald-100 border-emerald-400 text-emerald-900' 
-                        : 'bg-red-100 border-red-400 text-red-900'
-                    }`}>
+                    <div className={`p-2 rounded text-[11px] font-medium border ${diagnosticResult.success
+                      ? 'bg-emerald-100 border-emerald-400 text-emerald-900'
+                      : 'bg-red-100 border-red-400 text-red-900'
+                      }`}>
                       {diagnosticResult.message}
                     </div>
                   )}
@@ -1729,19 +1713,18 @@ export const AdminModal: React.FC = () => {
                     <label className="block text-xs font-bold text-amber-950">
                       Browse & Upload Photo / Video File
                     </label>
-                    
+
                     <div
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
-                        isDragOver
-                          ? 'border-[#B8001F] bg-red-50 scale-[1.01]'
-                          : uploadUrl
+                      className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${isDragOver
+                        ? 'border-[#B8001F] bg-red-50 scale-[1.01]'
+                        : uploadUrl
                           ? 'border-emerald-500 bg-emerald-50'
                           : 'border-amber-300 bg-white hover:border-[#B8001F] hover:bg-amber-50/50'
-                      }`}
+                        }`}
                     >
                       <input
                         ref={fileInputRef}
@@ -1764,9 +1747,8 @@ export const AdminModal: React.FC = () => {
                             <img src={uploadUrl} alt="Preview" className="w-full h-full object-cover" />
                           </div>
                           <div className="text-left space-y-1">
-                            <span className={`px-2 py-0.5 rounded text-white text-[10px] font-bold ${
-                              uploadStorageSource === 'supabase' ? 'bg-emerald-600' : 'bg-blue-600'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded text-white text-[10px] font-bold ${uploadStorageSource === 'supabase' ? 'bg-emerald-600' : 'bg-blue-600'
+                              }`}>
                               {uploadStorageSource === 'supabase' ? '☁️ SUPABASE CDN URL' : '📁 LOCAL FILE LOADED'}
                             </span>
                             <h5 className="text-xs font-bold text-[#7D0000] truncate max-w-[260px]">
@@ -1793,7 +1775,7 @@ export const AdminModal: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 ${['day1', 'day2', 'day3', 'day4'].includes(uploadCategory) ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
                     <div>
                       <label className="block text-xs font-bold text-amber-950 mb-1">Media Type</label>
                       <select
@@ -1827,16 +1809,36 @@ export const AdminModal: React.FC = () => {
                       <label className="block text-xs font-bold text-amber-950 mb-1">Gallery Category</label>
                       <select
                         value={uploadCategory}
-                        onChange={(e) => setUploadCategory(e.target.value as any)}
-                        className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+                        onChange={(e) => setUploadCategory(e.target.value as GalleryCategory)}
+                        className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-bold focus:outline-none focus:border-[#B8001F]"
                       >
-                        <option value="pandal">Pandal Architecture</option>
-                        <option value="idol">Idol Sanctum</option>
-                        <option value="lights">Lights & Illuminations</option>
-                        <option value="celebrities">VIP / Stage</option>
-                        <option value="bhasani">Bhasani Procession</option>
+                        <option value="day1">📅 Day 1 (Maha Shasthi)</option>
+                        <option value="day2">📅 Day 2 (Maha Saptami)</option>
+                        <option value="day3">📅 Day 3 (Maha Ashtami)</option>
+                        <option value="day4">📅 Day 4 (Maha Navami / Dashami)</option>
+                        <option value="bhasani">🎆 Bhasani Procession (Immersion)</option>
+                        <option value="emergency">🚨 Emergency & Medical Services</option>
+                        <option value="minabazar">🎡 Minabazar & Food Stalls</option>
                       </select>
                     </div>
+
+                    {['day1', 'day2', 'day3', 'day4'].includes(uploadCategory) && (
+                      <div className="animate-fadeIn">
+                        <label className="block text-xs font-bold text-[#B8001F] mb-1 flex items-center justify-between">
+                          <span>Subcategory Option</span>
+                          <span className="text-[9px] bg-red-100 text-[#B8001F] px-1.5 py-0.2 rounded font-black uppercase tracking-wider">SELECT ONE</span>
+                        </label>
+                        <select
+                          value={uploadSubCategory}
+                          onChange={(e) => setUploadSubCategory(e.target.value as GalleryDaySubcategory)}
+                          className="w-full bg-amber-50/80 border-2 border-[#B8001F] rounded-xl px-3 py-2.5 text-xs text-amber-950 font-bold focus:outline-none focus:ring-2 focus:ring-[#FFD700]"
+                        >
+                          <option value="vip">🎖️ VIP Guests (ମାନ୍ୟଗଣ୍ୟ ଅତିଥି)</option>
+                          <option value="cultural">🎭 Cultural Program (ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ)</option>
+                          <option value="rituals">🪔 Rituals & Puja (ପୂଜା ବିଧି ଓ ଆରତି)</option>
+                        </select>
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-xs font-bold text-amber-950 mb-1">Media Title (English)</label>
@@ -1901,16 +1903,38 @@ export const AdminModal: React.FC = () => {
 
                 {/* Published Gallery Files Delete Manager */}
                 <div className="pt-6 border-t border-amber-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-2">
-                      <Trash2 className="w-4 h-4 text-[#B8001F]" />
-                      <span>Manage Published Gallery Files ({gallery.length})</span>
-                    </h4>
-                    <span className="text-[10px] text-amber-950/70 font-medium">Click Trash Icon to Delete Any File</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-[#7D0000] uppercase tracking-wider flex items-center gap-2">
+                        <Trash2 className="w-4 h-4 text-[#B8001F]" />
+                        <span>Manage Published Gallery Files ({gallery.length})</span>
+                      </h4>
+                      <span className="text-[10px] text-amber-950/70 font-medium">Click Trash Icon to Delete Any File</span>
+                    </div>
+
+                    {/* Filter buttons */}
+                    <div className="flex flex-wrap items-center gap-1">
+                      {(['all', 'day1', 'day2', 'day3', 'day4', 'bhasani', 'emergency', 'minabazar'] as const).map(cat => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setAdminMediaFilter(cat)}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
+                            adminMediaFilter === cat
+                              ? 'bg-[#B8001F] text-white shadow-xs'
+                              : 'bg-amber-100/70 text-amber-900 hover:bg-amber-200'
+                          }`}
+                        >
+                          {cat === 'all' ? 'All' : cat === 'day1' ? 'Day 1' : cat === 'day2' ? 'Day 2' : cat === 'day3' ? 'Day 3' : cat === 'day4' ? 'Day 4' : cat === 'bhasani' ? 'Bhasani' : cat === 'emergency' ? 'Emergency' : 'Minabazar'}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[250px] overflow-y-auto pr-1">
-                    {gallery.map((g) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[280px] overflow-y-auto pr-1">
+                    {gallery
+                      .filter(g => adminMediaFilter === 'all' || g.category === adminMediaFilter)
+                      .map((g) => (
                       <div
                         key={g.id}
                         className="p-2.5 bg-white rounded-xl border border-amber-200 flex items-center justify-between gap-3 hover:border-[#B8001F] transition-all shadow-xs"
@@ -1921,16 +1945,22 @@ export const AdminModal: React.FC = () => {
                           </div>
                           <div className="truncate text-xs">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${
-                                g.type === 'video' ? 'bg-purple-700 text-white' : 'bg-blue-600 text-white'
-                              }`}>
+                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${g.type === 'video' ? 'bg-purple-700 text-white' : 'bg-blue-600 text-white'
+                                }`}>
                                 {g.type === 'video' ? '🎬 VIDEO' : '📷 PHOTO'}
                               </span>
                               <span className="px-1.5 py-0.2 rounded bg-[#B8001F] text-[#FFD700] text-[9px] font-black">{g.year}</span>
                             </div>
                             <h5 className="font-bold text-amber-950 truncate">{g.titleEn}</h5>
-                            <div className="flex items-center gap-2 text-[10px] text-amber-900/70 font-medium mt-0.5">
-                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 uppercase font-bold text-[9px]">{g.category}</span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-amber-900/70 font-medium mt-0.5">
+                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 uppercase font-bold text-[9px]">
+                                {g.category === 'day1' ? 'Day 1' : g.category === 'day2' ? 'Day 2' : g.category === 'day3' ? 'Day 3' : g.category === 'day4' ? 'Day 4' : g.category}
+                              </span>
+                              {g.subCategory && (
+                                <span className="px-1.5 py-0.2 rounded bg-purple-100 text-purple-900 font-bold text-[9px]">
+                                  {g.subCategory === 'vip' ? '🎖️ VIP' : g.subCategory === 'cultural' ? '🎭 Cultural' : '🪔 Rituals'}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -2013,7 +2043,7 @@ export const AdminModal: React.FC = () => {
                           type="text"
                           value={storyAuthorRole}
                           onChange={(e) => setStoryAuthorRole(e.target.value)}
-                          placeholder="e.g. President / Founder (1976) / Secretary"
+                          placeholder="e.g. President / Founder (2025) / Secretary"
                           className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
                         />
                       </div>
@@ -2133,7 +2163,7 @@ export const AdminModal: React.FC = () => {
             {/* TAB: ODIA (ଓଡ଼ିଆ) TRANSLATION & TEXT EDITOR */}
             {adminTab === 'translations' && (
               <div className="space-y-6">
-                
+
                 {/* Header Banner with Bulk Action */}
                 <div className="p-4 bg-white rounded-2xl border-2 border-[#D4AF37] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1">
@@ -2206,11 +2236,10 @@ export const AdminModal: React.FC = () => {
                           key={sec.id}
                           type="button"
                           onClick={() => setTranslationSectionFilter(sec.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                            translationSectionFilter === sec.id
-                              ? 'bg-[#7D0000] text-[#FFD700] shadow-xs'
-                              : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-                          }`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${translationSectionFilter === sec.id
+                            ? 'bg-[#7D0000] text-[#FFD700] shadow-xs'
+                            : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                            }`}
                         >
                           {sec.label}
                         </button>
@@ -2236,9 +2265,8 @@ export const AdminModal: React.FC = () => {
                       return (
                         <div
                           key={item.key}
-                          className={`p-4 bg-white rounded-xl border transition-all shadow-xs space-y-2.5 ${
-                            isUnsaved ? 'border-[#B8001F] ring-1 ring-[#B8001F]/30 bg-rose-50/20' : 'border-amber-200 hover:border-amber-400'
-                          }`}
+                          className={`p-4 bg-white rounded-xl border transition-all shadow-xs space-y-2.5 ${isUnsaved ? 'border-[#B8001F] ring-1 ring-[#B8001F]/30 bg-rose-50/20' : 'border-amber-200 hover:border-amber-400'
+                            }`}
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2">

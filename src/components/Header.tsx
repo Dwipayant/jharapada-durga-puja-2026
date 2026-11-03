@@ -5,6 +5,7 @@ import {
   Tv,
   Calendar,
   Ticket,
+  Heart,
   ShieldCheck,
   Globe,
   Menu,
@@ -14,6 +15,7 @@ import {
   Clock,
   Camera
 } from 'lucide-react';
+import { IS_VIP_PASS_BOOKING_ACTIVE } from '../types';
 
 export const Header: React.FC = () => {
   const {
@@ -120,8 +122,17 @@ export const Header: React.FC = () => {
             </button>
 
             <a href="#passes-donations" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
-              <Ticket className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'VIP Pass & Donate' : 'ଇ-ପାସ୍ ଓ ଦାନ'}</span>
+              {IS_VIP_PASS_BOOKING_ACTIVE ? (
+                <>
+                  <Ticket className="w-4 h-4 text-[#B8001F] shrink-0" />
+                  <span className="whitespace-nowrap">{language === 'en' ? 'VIP Pass & Donate' : 'ଇ-ପାସ୍ ଓ ଦାନ'}</span>
+                </>
+              ) : (
+                <>
+                  <Heart className="w-4 h-4 text-[#B8001F] fill-[#B8001F]/20 shrink-0" />
+                  <span className="whitespace-nowrap">{language === 'en' ? 'E-Donation & Seva' : 'ଅନଲାଇନ୍ ଦାନ'}</span>
+                </>
+              )}
             </a>
 
             <a href="#heritage" className="flex items-center gap-1.5 px-2 py-1 rounded-md text-gray-800 hover:text-[#B8001F] hover:bg-amber-100/50 transition-colors whitespace-nowrap shrink-0">
@@ -222,8 +233,17 @@ export const Header: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-950 whitespace-nowrap"
             >
-              <Ticket className="w-4 h-4 text-[#B8001F] shrink-0" />
-              <span className="whitespace-nowrap">{language === 'en' ? 'Pass & Donate' : 'ଇ-ପାସ୍'}</span>
+              {IS_VIP_PASS_BOOKING_ACTIVE ? (
+                <>
+                  <Ticket className="w-4 h-4 text-[#B8001F] shrink-0" />
+                  <span className="whitespace-nowrap">{language === 'en' ? 'Pass & Donate' : 'ଇ-ପାସ୍'}</span>
+                </>
+              ) : (
+                <>
+                  <Heart className="w-4 h-4 text-[#B8001F] fill-[#B8001F]/20 shrink-0" />
+                  <span className="whitespace-nowrap">{language === 'en' ? 'E-Donation' : 'ଅନଲାଇନ୍ ଦାନ'}</span>
+                </>
+              )}
             </a>
             <a
               href="#heritage"

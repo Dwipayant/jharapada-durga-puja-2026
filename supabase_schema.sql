@@ -121,7 +121,8 @@ CREATE TABLE public.gallery (
   id TEXT PRIMARY KEY,
   title_en TEXT NOT NULL,
   title_or TEXT,
-  category TEXT CHECK (category IN ('pandal', 'idol', 'lights', 'celebrities', 'bhasani')),
+  category TEXT NOT NULL, -- 'day1', 'day2', 'day3', 'day4', 'bhasani', 'emergency', 'minabazar', 'pandal', etc.
+  subcategory TEXT,       -- 'cultural', 'vip', 'rituals'
   year INT DEFAULT 2026,
   type TEXT DEFAULT 'image',
   url TEXT NOT NULL,

@@ -102,7 +102,7 @@ export interface DigitalPass {
   visitDate: string;
   timeSlot: string;
   qrCodeValue: string;
-  status: 'Approved' | 'Used' | 'Pending';
+  status: 'Approved' | 'Used' | 'Pending' | 'Inactive';
   scannedAt?: string;
   scanCount?: number;
   createdAt: string;
@@ -121,11 +121,30 @@ export interface DonationRecord {
   receiptNumber: string;
 }
 
+export type GalleryCategory = 
+  | 'day1' 
+  | 'day2' 
+  | 'day3' 
+  | 'day4' 
+  | 'bhasani' 
+  | 'emergency' 
+  | 'minabazar'
+  | 'pandal' 
+  | 'idol' 
+  | 'lights' 
+  | 'celebrities';
+
+export type GalleryDaySubcategory = 
+  | 'cultural' 
+  | 'vip' 
+  | 'rituals';
+
 export interface GalleryMedia {
   id: string;
   titleEn: string;
   titleOr: string;
-  category: 'pandal' | 'idol' | 'lights' | 'celebrities' | 'bhasani';
+  category: GalleryCategory;
+  subCategory?: GalleryDaySubcategory | string;
   year: number;
   type: 'image' | 'video';
   url: string;
@@ -155,4 +174,11 @@ export interface HistoryStory {
   documentUrl?: string; // PDF Press release
   datePosted: string;
 }
+
+/**
+ * FEATURE FLAG: Senior Citizen / VIP Express Pass Booking Session.
+ * Set to FALSE to temporarily disable pass registration for this season.
+ * Set to TRUE next year to re-activate the VIP Pass booking section and QR generation.
+ */
+export const IS_VIP_PASS_BOOKING_ACTIVE = false;
 

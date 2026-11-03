@@ -415,6 +415,7 @@ export const fetchGalleryFromSupabase = async (): Promise<GalleryMedia[] | null>
       titleEn: item.title_en,
       titleOr: item.title_or || item.title_en,
       category: item.category,
+      subCategory: item.subcategory || item.sub_category || undefined,
       year: item.year,
       type: item.type || 'image',
       url: item.url,
@@ -429,15 +430,26 @@ export const fetchGalleryFromSupabase = async (): Promise<GalleryMedia[] | null>
 export const insertGalleryToSupabase = async (item: GalleryMedia): Promise<boolean> => {
   if (!isSupabaseConfigured() || !supabase) return false;
   try {
-    const { error } = await supabase.from('gallery').insert([{
+    const payload: any = {
       id: item.id,
       title_en: item.titleEn,
       title_or: item.titleOr,
       category: item.category,
       year: item.year,
       type: item.type,
-      url: item.url
-    }]);
+      url: item.url,
+      thumbnail_url: item.thumbnailUrl
+    };
+    if (item.subCategory) {
+      payload.subcategory = item.subCategory;
+    }
+    const { error } = await supabase.from('gallery').insert([payload]);
+    if (error && error.message?.includes('subcategory')) {
+      // Fallback for legacy DB tables without subcategory column
+      delete payload.subcategory;
+      const { error: retryErr } = await supabase.from('gallery').insert([payload]);
+      return !retryErr;
+    }
     return !error;
   } catch {
     return false;
@@ -563,6 +575,17 @@ export const insertPassToSupabase = async (pass: DigitalPass): Promise<boolean> 
       qr_code_value: pass.qrCodeValue,
       status: pass.status
     }]);
+    return !error;
+  } catch {
+    return false;
+  }
+};
+
+/** Update Digital Pass status (Approved / Inactive / Used) in Supabase DB */
+export const updatePassStatusInSupabase = async (id: string, status: DigitalPass['status']): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !supabase) return false;
+  try {
+    const { error } = await supabase.from('passes').update({ status }).eq('id', id);
     return !error;
   } catch {
     return false;
@@ -695,6 +718,28 @@ export const recordPassScanInSupabase = async (
 
       const isDuplicate = Boolean(passFound && (passFound.scanCount || 0) > 0);
       const newScanCount = (passFound?.scanCount || 0) + 1;
+
+      // Check if Pass is marked as Inactive / Revoked
+      if (passFound && passFound.status === 'Inactive') {
+        const scanId = 'scan-' + Date.now();
+        await supabase.from('pass_scans').insert([{
+          id: scanId,
+          pass_id: targetId,
+          full_name: passFound.fullName,
+          pass_type: passFound.passType,
+          gate: gate,
+          status: 'Invalid',
+          scanned_by: scannedBy,
+          scanned_at: now
+        }]);
+
+        return {
+          success: false,
+          pass: passFound,
+          isDuplicate: false,
+          message: `⛔ Entry Denied! Pass #${targetId} (${passFound.fullName}) is marked as INACTIVE / REVOKED.`
+        };
+      }
 
       // 2. Insert into pass_scans table in Supabase
       const scanId = 'scan-' + Date.now();

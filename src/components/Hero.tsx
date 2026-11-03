@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
-import { Tv, Ticket, Heart, Sparkles, Clock } from 'lucide-react';
+import { Tv, Ticket, Heart, Sparkles, Clock, Camera } from 'lucide-react';
 import { JhotiDivider } from './JhotiDivider';
+import { IS_VIP_PASS_BOOKING_ACTIVE } from '../types';
 
 export const Hero: React.FC = () => {
   const { language, setIsLiveModalOpen, t } = useApp();
@@ -67,7 +68,11 @@ export const Hero: React.FC = () => {
 
         {/* Subtitle */}
         <p className="max-w-3xl mx-auto text-base sm:text-lg text-amber-950/80 font-sans font-medium leading-relaxed mb-8">
-          {t('hero_description', 'Experience 24x7 4K Ultra HD Live Darshan on YouTube & VIP express QR passes.', 'ୟୁଟ୍ୟୁବ୍ ୪K HD ମାଧ୍ୟମରେ ୨୪x୭ ଲାଇଭ୍ ଦର୍ଶନ କରନ୍ତୁ, ଏବଂ ବରିଷ୍ଠ ନାଗରିକ ଫାଷ୍ଟ-ଟ୍ରାକ୍ QR ପାସ୍ ହାସଲ କରନ୍ତୁ ।')}
+          {IS_VIP_PASS_BOOKING_ACTIVE
+            ? t('hero_description', 'Experience 24x7 4K Ultra HD Live Darshan on YouTube & VIP express QR passes.', 'ୟୁଟ୍ୟୁବ୍ ୪K HD ମାଧ୍ୟମରେ ୨୪x୭ ଲାଇଭ୍ ଦର୍ଶନ କରନ୍ତୁ, ଏବଂ ବରିଷ୍ଠ ନାଗରିକ ଫାଷ୍ଟ-ଟ୍ରାକ୍ QR ପାସ୍ ହାସଲ କରନ୍ତୁ ।')
+            : (language === 'en'
+              ? 'Experience 24x7 4K Ultra HD Live Darshan, Explore Day-wise Festival Gallery Highlights, and contribute to Bhog Seva.'
+              : 'ୟୁଟ୍ୟୁବ୍ ୪K HD ମାଧ୍ୟମରେ ୨୪x୭ ଲାଇଭ୍ ଦର୍ଶନ କରନ୍ତୁ, ପ୍ରତ୍ୟେକ ଦିନର ପୂଜା ଫଟୋ ଓ ଭିଡିଓ ଦେଖନ୍ତୁ ଏବଂ ଅନଲାଇନ୍ ମାଧ୍ୟମରେ ଦାନ କରନ୍ତୁ ।')}
         </p>
 
         {/* Action Buttons */}
@@ -83,13 +88,23 @@ export const Hero: React.FC = () => {
             </span>
           </button>
 
-          <a
-            href="#passes-donations"
-            className="gold-button px-6 py-3.5 rounded-xl text-black flex items-center gap-2 text-base font-bold shadow-lg"
-          >
-            <Ticket className="w-5 h-5 text-[#7D0000]" />
-            <span>{t('hero_btn_vip_pass', 'Get VIP / Senior QR Pass', 'ବରିଷ୍ଠ / VIP QR ପାସ୍')}</span>
-          </a>
+          {IS_VIP_PASS_BOOKING_ACTIVE ? (
+            <a
+              href="#passes-donations"
+              className="gold-button px-6 py-3.5 rounded-xl text-black flex items-center gap-2 text-base font-bold shadow-lg"
+            >
+              <Ticket className="w-5 h-5 text-[#7D0000]" />
+              <span>{t('hero_btn_vip_pass', 'Get VIP / Senior QR Pass', 'ବରିଷ୍ଠ / VIP QR ପାସ୍')}</span>
+            </a>
+          ) : (
+            <a
+              href="#gallery"
+              className="gold-button px-6 py-3.5 rounded-xl text-black flex items-center gap-2 text-base font-bold shadow-lg"
+            >
+              <Camera className="w-5 h-5 text-[#7D0000]" />
+              <span>{language === 'en' ? 'Explore Festival Gallery' : 'ପୂଜା ଗ୍ୟାଲେରୀ ଦେଖନ୍ତୁ'}</span>
+            </a>
+          )}
 
           <a
             href="#passes-donations"

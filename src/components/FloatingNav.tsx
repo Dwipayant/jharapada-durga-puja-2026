@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Tv, Calendar, Ticket, Sparkles, Image, ArrowUp } from 'lucide-react';
+import { Tv, Calendar, Ticket, Heart, Sparkles, Image, ArrowUp } from 'lucide-react';
+import { IS_VIP_PASS_BOOKING_ACTIVE } from '../types';
 
 export const FloatingNav: React.FC = () => {
   const { language, setIsLiveModalOpen, isLiveModalOpen, isAdminModalOpen, isAnyModalOpen } = useApp();
@@ -61,9 +62,9 @@ export const FloatingNav: React.FC = () => {
     },
     {
       id: 'passes-donations',
-      labelEn: 'Pass & Donate',
-      labelOr: 'ପାସ୍/ଦାନ',
-      icon: Ticket,
+      labelEn: IS_VIP_PASS_BOOKING_ACTIVE ? 'Pass & Donate' : 'Donation',
+      labelOr: IS_VIP_PASS_BOOKING_ACTIVE ? 'ପାସ୍/ଦାନ' : 'ଦାନ',
+      icon: IS_VIP_PASS_BOOKING_ACTIVE ? Ticket : Heart,
       href: '#passes-donations'
     },
     {

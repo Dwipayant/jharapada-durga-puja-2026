@@ -1,10 +1,10 @@
-import type { 
-  TickerAnnouncement, 
-  LiveStreamConfig, 
-  CrowdStatus, 
-  DailyRitual, 
-  StallItem, 
-  GalleryMedia, 
+import type {
+  TickerAnnouncement,
+  LiveStreamConfig,
+  CrowdStatus,
+  DailyRitual,
+  StallItem,
+  GalleryMedia,
   PranamMessage,
   HistoryStory
 } from '../types';
@@ -434,13 +434,13 @@ export const initialHistoryStories: HistoryStory[] = [
   },
   {
     id: 'hs-2',
-    titleEn: 'Founder Legacy Story: 1976 First Puja Memories by Elder Members',
+    titleEn: 'Founder Legacy Story: 2025 First Puja Memories by Elder Members',
     titleOr: '୧୯୭୬ ପ୍ରଥମ ପୂଜା ସ୍ମୃତି: ପ୍ରତିଷ୍ଠାତା ସଦସ୍ୟଙ୍କ ମୁଖରୁ',
     authorName: 'Shri Rabindra Nath Dash',
-    authorRole: 'Founder Member & Chief Patron (1976)',
+    authorRole: 'Founder Member & Chief Patron (2025)',
     category: 'member_story',
-    year: 1976,
-    contentEn: 'Back in 1976, our village elders and youth pooled Rs. 500 to erect a modest bamboo structure. From those humble beginnings, Jharapada has grown to become Odisha’s premier festive destination.',
+    year: 2025,
+    contentEn: 'Back in 2025, our village elders and youth pooled Rs. 500 to erect a modest bamboo structure. From those humble beginnings, Jharapada has grown to become Odisha’s premier festive destination.',
     contentOr: '୧୯୭୬ ମସିହାରେ ଆମ ଝାରପଡ଼ାର ଯୁବକମାନେ ୫୦୦ ଟଙ୍କା ସଂଗ୍ରହ କରି ମା\'ଙ୍କର ପ୍ରଥମ ପୂଜା ସ୍ଥାପନା କରିଥିଲେ ।',
     mediaUrl: 'https://images.unsplash.com/photo-1604580864964-0462f5d5b1a8?auto=format&fit=crop&w=1200&q=80',
     datePosted: '2026-09-15'

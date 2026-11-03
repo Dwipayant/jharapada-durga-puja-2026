@@ -16,7 +16,7 @@ export const HeritageStory: React.FC = () => {
 
   const timelineEvents = [
     {
-      year: '1976',
+      year: '2025',
       titleEn: 'Inception of Jharapada Puja',
       titleOr: 'ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜାର ଶୁଭାରମ୍ଭ',
       descEn: 'Started as a neighborhood ritual by local youth elders with simple bamboo architecture.',
@@ -45,14 +45,14 @@ export const HeritageStory: React.FC = () => {
     }
   ];
 
-  const filteredStories = historyStories.filter(story => 
+  const filteredStories = historyStories.filter(story =>
     activeTab === 'all' || story.category === activeTab
   );
 
   return (
     <section id="heritage" className="py-16 bg-[#FFFDF8] relative text-amber-950 border-b border-[#D4AF37]/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-[#B8001F] text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
@@ -71,7 +71,7 @@ export const HeritageStory: React.FC = () => {
 
         {/* Feature Story Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-16">
-          
+
           <div className="glass-card-gold p-6 sm:p-8 rounded-2xl border-2 border-[#D4AF37] shadow-xl relative">
             <span className="text-xs font-bold text-[#8B0000] uppercase tracking-widest block mb-2">
               THE 2026 ARCHITECTURAL MARVEL
@@ -109,7 +109,7 @@ export const HeritageStory: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-bold font-serif-royal text-[#7D0000] mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[#B8001F]" />
-              <span>{language === 'en' ? 'Evolution Timeline (1976 - 2026)' : 'ଝାରପଡ଼ା ପୂଜାର ଇତିହାସ କ୍ରମ'}</span>
+              <span>{language === 'en' ? 'Evolution Timeline (2025 - 2026)' : 'ଝାରପଡ଼ା ପୂଜାର ଇତିହାସ କ୍ରମ'}</span>
             </h3>
 
             <div className="space-y-3 border-l-2 border-amber-300 pl-4">
@@ -136,7 +136,7 @@ export const HeritageStory: React.FC = () => {
 
         {/* PRESS RELEASE NOTES & MEMBER STORIES ARCHIVE */}
         <div className="mt-16 pt-12 border-t border-amber-200">
-          
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-[#B8001F] text-xs font-bold uppercase tracking-wider mb-2">
@@ -161,22 +161,20 @@ export const HeritageStory: React.FC = () => {
           <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 text-xs font-bold">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-xl transition-all ${
-                activeTab === 'all'
+              className={`px-4 py-2 rounded-xl transition-all ${activeTab === 'all'
                   ? 'crimson-button text-white shadow-md'
                   : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-              }`}
+                }`}
             >
               All Archives ({historyStories.length})
             </button>
 
             <button
               onClick={() => setActiveTab('press_note')}
-              className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
-                activeTab === 'press_note'
+              className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${activeTab === 'press_note'
                   ? 'crimson-button text-white shadow-md'
                   : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-              }`}
+                }`}
             >
               <Newspaper className="w-4 h-4" />
               <span>Press Notes</span>
@@ -184,11 +182,10 @@ export const HeritageStory: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('member_story')}
-              className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
-                activeTab === 'member_story'
+              className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${activeTab === 'member_story'
                   ? 'crimson-button text-white shadow-md'
                   : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-              }`}
+                }`}
             >
               <UserCheck className="w-4 h-4" />
               <span>Member & Founder Stories</span>
@@ -196,11 +193,10 @@ export const HeritageStory: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('achievement')}
-              className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${
-                activeTab === 'achievement'
+              className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${activeTab === 'achievement'
                   ? 'crimson-button text-white shadow-md'
                   : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
-              }`}
+                }`}
             >
               <Award className="w-4 h-4" />
               <span>Awards & Milestones</span>

@@ -325,7 +325,7 @@ export const DEFAULT_TRANSLATIONS: TranslationItem[] = [
     key: 'heritage_section_desc',
     section: 'heritage',
     label: 'Heritage Section Description',
-    textEn: 'Founded in 1976, Jharapada Durga Puja Committee has grown to become one of Odisha’s most iconic socio-cultural celebrations.',
+    textEn: 'Founded in 2025, Jharapada Durga Puja Committee has grown to become one of Odisha’s most iconic socio-cultural celebrations.',
     defaultOr: '୧୯୭୬ ମସିହାରେ ଆରମ୍ଭ ହୋଇଥିବା ଝାରପଡ଼ା ଦୁର୍ଗା ପୂଜା ଆଜି ସମଗ୍ର ଓଡ଼ିଶାରେ ଏକ ଅନନ୍ୟ ପରିଚୟ ସୃଷ୍ଟି କରିଛି ।'
   },
 

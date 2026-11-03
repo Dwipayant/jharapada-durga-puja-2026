@@ -11,9 +11,10 @@ import {
   Play, 
   Film, 
   Calendar, 
-  ExternalLink, 
   Sparkles,
-  Layers
+  Layers,
+  Search,
+  Tag
 } from 'lucide-react';
 import { PanoramaViewer } from './PanoramaViewer';
 
@@ -24,17 +25,43 @@ const getYouTubeId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
+// Main category definitions
+const MAIN_CATEGORIES = [
+  { id: 'all', labelEn: 'All Categories', labelOr: 'ସମସ୍ତ ବିଭାଗ', icon: '🌟' },
+  { id: 'day1', labelEn: 'Day 1 (Shasthi)', labelOr: 'ପ୍ରଥମ ଦିନ (ଷଷ୍ଠୀ)', icon: '📅', isDay: true },
+  { id: 'day2', labelEn: 'Day 2 (Saptami)', labelOr: 'ଦ୍ୱିତୀୟ ଦିନ (ସପ୍ତମୀ)', icon: '📅', isDay: true },
+  { id: 'day3', labelEn: 'Day 3 (Ashtami)', labelOr: 'ତୃତୀୟ ଦିନ (ଅଷ୍ଟମୀ)', icon: '📅', isDay: true },
+  { id: 'day4', labelEn: 'Day 4 (Navami / Dashami)', labelOr: 'ଚତୁର୍ଥ ଦିନ (ନବମୀ/ଦଶମୀ)', icon: '📅', isDay: true },
+  { id: 'bhasani', labelEn: 'Bhasani (Immersion)', labelOr: 'ଭାସାଣି ଶୋଭାଯାତ୍ରା', icon: '🎆', isDay: false },
+  { id: 'emergency', labelEn: 'Emergency Service', labelOr: 'ଜରୁରୀକାଳୀନ ସେବା', icon: '🚨', isDay: false },
+  { id: 'minabazar', labelEn: 'Minabazar', labelOr: 'ମୀନା ବଜାର ଓ ଆନନ୍ଦମେଳା', icon: '🎡', isDay: false },
+] as const;
+
+// Subcategories under Day 1, Day 2, Day 3, Day 4
+const DAY_SUBCATEGORIES = [
+  { id: 'all', labelEn: 'All Day Events', labelOr: 'ଦିନର ସମସ୍ତ ବିଭାଗ', icon: '✨' },
+  { id: 'cultural', labelEn: 'Cultural Program', labelOr: 'ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ', icon: '🎭' },
+  { id: 'vip', labelEn: 'VIP Guests', labelOr: 'VIP ଅତିଥି', icon: '🎖️' },
+  { id: 'rituals', labelEn: 'Rituals', labelOr: 'ରୀତିନୀତି ଓ ଆଳତି', icon: '🪔' },
+] as const;
+
 export const GalleryAndVR: React.FC = () => {
   const { language, gallery, setIsAdminModalOpen, registerModalOpen } = useApp();
 
   // Primary Session Switcher: Photos vs Videos
   const [activeMediaType, setActiveMediaType] = useState<'image' | 'video'>('image');
 
-  // Year Filter: 'all' or specific year (2026, 2025, 2024, 2023...)
+  // Year Filter: 'all' or specific year (2026, 2025, 2024...)
   const [activeYear, setActiveYear] = useState<number | 'all'>('all');
 
-  // Category Sub-filter
+  // Main Category Filter: 'all' | 'day1' | 'day2' | 'day3' | 'day4' | 'bhasani' | 'emergency' | 'minabazar'
   const [activeCategory, setActiveCategory] = useState<string>('all');
+
+  // Sub-Category Filter (for Day 1 - Day 4): 'all' | 'cultural' | 'vip' | 'rituals'
+  const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
+
+  // Text search query
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Modal Lightbox states
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryMedia | null>(null);
@@ -89,27 +116,85 @@ export const GalleryAndVR: React.FC = () => {
     return gallery.filter(item => item.type === 'video').length;
   }, [gallery]);
 
-  // Compute item count for each year under the current media type
-  const getYearCount = (yr: number | 'all') => {
-    return gallery.filter(item => {
-      const type = item.type || 'image';
-      if (type !== activeMediaType) return false;
-      if (yr !== 'all' && item.year !== yr) return false;
-      if (activeCategory !== 'all' && item.category !== activeCategory) return false;
-      return true;
-    }).length;
+  // Check if a media item matches a main category
+  const matchesCategory = (item: GalleryMedia, cat: string) => {
+    if (cat === 'all') return true;
+    if (item.category === cat) return true;
+    // Legacy compatibility fallbacks
+    if (cat === 'day3' && (item.category as string) === 'idol') return true;
+    if (cat === 'minabazar' && ((item.category as string) === 'lights' || (item.category as string) === 'pandal')) return true;
+    if (cat === 'day3' && (item.category as string) === 'celebrities') return true;
+    if (cat === 'bhasani' && (item.category as string) === 'bhasani') return true;
+    return false;
   };
 
-  // Filter items based on activeMediaType, activeCategory, and activeYear
+  // Check if a media item matches a subcategory
+  const matchesSubCategory = (item: GalleryMedia, subCat: string) => {
+    if (subCat === 'all') return true;
+    if (item.subCategory === subCat) return true;
+    // Legacy compatibility fallbacks
+    if (subCat === 'rituals' && (item.category as string) === 'idol') return true;
+    if (subCat === 'vip' && (item.category as string) === 'celebrities') return true;
+    return false;
+  };
+
+  // Check if active category is one of the Days
+  const isDaySelected = ['day1', 'day2', 'day3', 'day4'].includes(activeCategory);
+
+  // Filter items
   const filteredGallery = useMemo(() => {
     return gallery.filter(item => {
       const type = item.type || 'image';
       if (type !== activeMediaType) return false;
       if (activeYear !== 'all' && item.year !== activeYear) return false;
-      if (activeCategory !== 'all' && item.category !== activeCategory) return false;
+      if (!matchesCategory(item, activeCategory)) return false;
+      if (isDaySelected && activeSubCategory !== 'all') {
+        if (!matchesSubCategory(item, activeSubCategory)) return false;
+      }
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const titleMatch = (item.titleEn?.toLowerCase() || '').includes(query) || 
+                           (item.titleOr?.toLowerCase() || '').includes(query);
+        if (!titleMatch) return false;
+      }
       return true;
     });
-  }, [gallery, activeMediaType, activeYear, activeCategory]);
+  }, [gallery, activeMediaType, activeYear, activeCategory, activeSubCategory, isDaySelected, searchQuery]);
+
+  // Compute item count for year pills under current media type
+  const getYearCount = (yr: number | 'all') => {
+    return gallery.filter(item => {
+      const type = item.type || 'image';
+      if (type !== activeMediaType) return false;
+      if (yr !== 'all' && item.year !== yr) return false;
+      if (!matchesCategory(item, activeCategory)) return false;
+      if (isDaySelected && activeSubCategory !== 'all') {
+        if (!matchesSubCategory(item, activeSubCategory)) return false;
+      }
+      return true;
+    }).length;
+  };
+
+  // Compute item count for category pills
+  const getCategoryCount = (catId: string) => {
+    return gallery.filter(item => {
+      const type = item.type || 'image';
+      if (type !== activeMediaType) return false;
+      if (activeYear !== 'all' && item.year !== activeYear) return false;
+      return matchesCategory(item, catId);
+    }).length;
+  };
+
+  // Compute item count for subcategory pills under selected day
+  const getSubCategoryCount = (subId: string) => {
+    return gallery.filter(item => {
+      const type = item.type || 'image';
+      if (type !== activeMediaType) return false;
+      if (activeYear !== 'all' && item.year !== activeYear) return false;
+      if (!matchesCategory(item, activeCategory)) return false;
+      return matchesSubCategory(item, subId);
+    }).length;
+  };
 
   // Group years to render
   const yearsToDisplay = useMemo(() => {
@@ -134,19 +219,32 @@ export const GalleryAndVR: React.FC = () => {
         return language === 'en' 
           ? 'Mysore Palace Architecture Heritage' 
           : 'ମହୀଶୂର ରାଜପ୍ରାସାଦ ତୋରଣ ଓ ଧୁନୁଚି ଆରତୀ';
-      case 2023:
-        return language === 'en' 
-          ? 'Golden Temple Pandal & Vijayadasami' 
-          : 'ସୁବର୍ଣ୍ଣ ମନ୍ଦିର ତୋରଣ ଓ ବିଜୟାଦଶମୀ ମହୋତ୍ସବ';
       default:
         return language === 'en' ? `Festive Archives of ${yr}` : `${yr} ମସିହାର ସ୍ମରଣୀୟ ମୁହୂର୍ତ୍ତ`;
     }
+  };
+
+  // Category labels helper
+  const getCategoryDisplayLabel = (cat: string) => {
+    const found = MAIN_CATEGORIES.find(c => c.id === cat);
+    if (found) return language === 'en' ? found.labelEn : found.labelOr;
+    return cat;
+  };
+
+  // Subcategory labels helper
+  const getSubcategoryDisplayLabel = (subcat?: string) => {
+    if (!subcat) return null;
+    const found = DAY_SUBCATEGORIES.find(s => s.id === subcat && s.id !== 'all');
+    if (found) return `${found.icon} ${language === 'en' ? found.labelEn : found.labelOr}`;
+    return subcat;
   };
 
   // Reset all filters
   const handleResetFilters = () => {
     setActiveYear('all');
     setActiveCategory('all');
+    setActiveSubCategory('all');
+    setSearchQuery('');
   };
 
   return (
@@ -160,17 +258,17 @@ export const GalleryAndVR: React.FC = () => {
             <span>{language === 'en' ? 'Festival Archives & Virtual Tour' : 'ଉତ୍ସବ ଅଭିଲେଖ ଓ ୩୬୦° ଭର୍ଚୁଆଲ ଟୁର'}</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-bold font-serif-royal royal-gold-heading mb-3">
-            {language === 'en' ? 'Photos, Videos & 360° Pandal Tour' : 'ଫଟୋ, ଭିଡିଓ ଓ ୩୬୦° ମଣ୍ଡପ ପରିଦର୍ଶନ'}
+            {language === 'en' ? 'Photo & Video Gallery' : 'ଫଟୋ ଓ ଭିଡିଓ ଗ୍ୟାଲେରୀ'}
           </h2>
           <p className="text-amber-950/80 text-sm sm:text-base font-medium">
             {language === 'en'
-              ? 'Browse high-resolution photographs and 4K videos sorted year-wise from 2026 to past golden archives, plus 360° interactive virtual pandal tour.'
-              : '୨୦୨୬ ରୁ ପୂର୍ବ ବର୍ଷର ସମସ୍ତ ଫଟୋ ଓ ଭିଡିଓ ବର୍ଷ ଅନୁସାରେ ଦେଖନ୍ତୁ, ଏବଂ ୩୬୦° ଡିଜିଟାଲ୍ ମଣ୍ଡପ ଭ୍ରମଣର ଆନନ୍ଦ ନିଅନ୍ତୁ ।'}
+              ? 'Browse high-resolution photographs & 4K videos sorted year-wise, day-wise (Cultural Programs, VIP Guests, Rituals) plus Bhasani, Emergency Services, and Minabazar.'
+              : 'ବର୍ଷ (୨୦୨୬, ୨୦୨୫), ପ୍ରତ୍ୟେକ ଦିନ (ସାଂସ୍କୃତିକ କାର୍ଯ୍ୟକ୍ରମ, VIP ଅତିଥି, ରୀତିନୀତି), ଭାସାଣି, ଜରୁରୀକାଳୀନ ସେବା ଓ ମୀନା ବଜାର ଅନୁଯାୟୀ ଫଟୋ ଓ ଭିଡିଓ ଦେଖନ୍ତୁ ।'}
           </p>
         </div>
 
         {/* 360 Virtual Tour Banner Card */}
-        <div className="glass-card-gold p-5 sm:p-6 rounded-2xl border-2 border-[#D4AF37] mb-12 shadow-xl relative overflow-hidden">
+        <div className="glass-card-gold p-5 sm:p-6 rounded-2xl border-2 border-[#D4AF37] mb-10 shadow-xl relative overflow-hidden">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
             <div className="space-y-1.5 text-left">
               <span className="px-2.5 py-0.5 rounded-full bg-[#B8001F] text-white text-[10px] font-black uppercase tracking-wider shadow-xs inline-flex items-center gap-1">
@@ -192,7 +290,7 @@ export const GalleryAndVR: React.FC = () => {
                 className="gold-button px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm text-amber-950 hover:bg-amber-300 transition-all cursor-pointer"
               >
                 <Upload className="w-4 h-4 text-[#B8001F]" />
-                <span>Upload Photo / Video</span>
+                <span>Upload Media (Admin)</span>
               </button>
 
               <button
@@ -208,7 +306,6 @@ export const GalleryAndVR: React.FC = () => {
           {/* Interactive 360 Panoramic Canvas Viewer */}
           {is360Active && (
             <div className="mt-6 space-y-4 animate-fadeIn border-t border-amber-300 pt-5">
-              {/* Preset View Switcher Bar */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-bold">
                 <span className="text-[#7D0000] font-extrabold shrink-0 flex items-center gap-1">
                   <Compass className="w-4 h-4" /> 360 Camera Angle:
@@ -230,29 +327,8 @@ export const GalleryAndVR: React.FC = () => {
                     {language === 'en' ? view.nameEn : view.nameOr}
                   </button>
                 ))}
-
-                {/* Option to view user uploaded images in 360 */}
-                {gallery.filter(g => (g.type || 'image') === 'image').length > 0 && (
-                  <select
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setActive360Url(e.target.value);
-                        setActive360Title('Custom Gallery Photo');
-                      }
-                    }}
-                    className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-950 text-xs font-medium focus:outline-none shrink-0"
-                  >
-                    <option value="">📁 Select Uploaded Photo for 360 View...</option>
-                    {gallery.filter(g => (g.type || 'image') === 'image').map(g => (
-                      <option key={g.id} value={g.url}>
-                        {g.titleEn} ({g.year} - {g.category})
-                      </option>
-                    ))}
-                  </select>
-                )}
               </div>
 
-              {/* 360 Interactive Canvas Container */}
               <div className="aspect-[16/8] min-h-[350px] w-full relative rounded-xl overflow-hidden border-2 border-[#D4AF37] shadow-inner">
                 <PanoramaViewer imageUrl={active360Url} title={active360Title} />
               </div>
@@ -260,7 +336,9 @@ export const GalleryAndVR: React.FC = () => {
           )}
         </div>
 
-        {/* PRIMARY SESSION SWITCHER: PHOTOS VS VIDEOS */}
+        {/* ======================================================== */}
+        {/* LEVEL 1: MEDIA TYPE SWITCHER (PHOTOS VS VIDEOS) */}
+        {/* ======================================================== */}
         <div className="flex flex-col items-center justify-center mb-8">
           <div className="inline-flex p-1.5 rounded-2xl bg-amber-100/90 border-2 border-[#D4AF37] shadow-lg max-w-md w-full">
             <button
@@ -299,18 +377,20 @@ export const GalleryAndVR: React.FC = () => {
           </div>
         </div>
 
-        {/* YEAR-WISE SELECTOR / FILTER BAR */}
-        <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-300 mb-6 shadow-xs">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            
-            {/* Year Pills */}
+        {/* ======================================================== */}
+        {/* HIERARCHICAL FILTER CONTAINER */}
+        {/* ======================================================== */}
+        <div className="bg-amber-50/80 p-5 rounded-2xl border border-amber-300 mb-8 shadow-sm space-y-4">
+          
+          {/* LEVEL 2: YEAR SELECTOR */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/80">
             <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
               <span className="text-xs font-bold text-[#7D0000] uppercase tracking-wider shrink-0 flex items-center gap-1.5 mr-1">
                 <Calendar className="w-4 h-4 text-[#B8001F]" />
-                {language === 'en' ? 'Select Year:' : 'ବର୍ଷ ବାଛନ୍ତୁ:'}
+                {language === 'en' ? 'Festival Year:' : 'ଉତ୍ସବ ବର୍ଷ:'}
               </span>
 
-              {/* All Years Button */}
+              {/* All Years Tab */}
               <button
                 onClick={() => setActiveYear('all')}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
@@ -327,7 +407,7 @@ export const GalleryAndVR: React.FC = () => {
                 </span>
               </button>
 
-              {/* Specific Years */}
+              {/* Specific Year Tabs */}
               {availableYears.map(yr => (
                 <button
                   key={yr}
@@ -340,7 +420,7 @@ export const GalleryAndVR: React.FC = () => {
                 >
                   <span>{yr}</span>
                   {yr === 2026 && (
-                    <span className="text-[9px] bg-[#FFD700] text-[#7D0000] px-1 py-0.2 rounded font-black uppercase">
+                    <span className="text-[9px] bg-[#FFD700] text-[#7D0000] px-1.5 py-0.2 rounded-full font-black uppercase tracking-tight">
                       50th
                     </span>
                   )}
@@ -353,43 +433,155 @@ export const GalleryAndVR: React.FC = () => {
               ))}
             </div>
 
-            {/* Current View Indicator / Reset */}
-            <div className="flex items-center gap-2 shrink-0 text-xs">
-              {(activeYear !== 'all' || activeCategory !== 'all') && (
+            {/* Quick Title Search */}
+            <div className="relative w-full sm:w-64">
+              <Search className="w-3.5 h-3.5 text-amber-700 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={language === 'en' ? 'Search photos/videos...' : 'ଖୋଜନ୍ତୁ...'}
+                className="w-full bg-white border border-amber-300 rounded-xl pl-8 pr-3 py-1.5 text-xs text-amber-950 font-medium focus:outline-none focus:border-[#B8001F]"
+              />
+              {searchQuery && (
                 <button
-                  onClick={handleResetFilters}
-                  className="px-3 py-1 rounded-lg bg-amber-200/80 hover:bg-amber-300 text-amber-950 font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-amber-700 hover:text-[#B8001F]"
                 >
-                  <X className="w-3.5 h-3.5 text-[#B8001F]" />
-                  <span>{language === 'en' ? 'Reset Filters' : 'ଫିଲ୍ଟର ହଟାନ୍ତୁ'}</span>
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Sub-Category Pills Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pt-3 mt-3 border-t border-amber-200/80 text-xs font-bold">
-            <span className="text-[11px] font-bold text-amber-950/70 shrink-0 uppercase tracking-wider flex items-center gap-1">
+          {/* LEVEL 3: MAIN CATEGORIES (Day 1, Day 2, Day 3, Day 4, Bhasani, Emergency Service, Minabazar) */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#7D0000] uppercase tracking-wider">
               <Layers className="w-3.5 h-3.5 text-[#B8001F]" />
-              {language === 'en' ? 'Category:' : 'ବିଭାଗ:'}
-            </span>
-            {['all', 'pandal', 'idol', 'lights', 'celebrities', 'bhasani'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-3 py-1 rounded-lg capitalize transition-all shrink-0 cursor-pointer ${
-                  activeCategory === cat
-                    ? 'bg-[#7D0000] text-white shadow-xs font-extrabold'
-                    : 'bg-white/80 text-amber-950 hover:bg-amber-200/70 border border-amber-200'
-                }`}
-              >
-                {cat === 'all' ? (language === 'en' ? 'All' : 'ସବୁ') : cat}
-              </button>
-            ))}
+              <span>{language === 'en' ? 'Category / Day:' : 'ବିଭାଗ / ଦିବସ:'}</span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold">
+              {MAIN_CATEGORIES.map((cat) => {
+                const count = getCategoryCount(cat.id);
+                const isSelected = activeCategory === cat.id;
+
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      setActiveSubCategory('all'); // Reset subcategory when main category changes
+                    }}
+                    className={`px-3 py-2 rounded-xl transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-[#7D0000] text-white shadow-md font-extrabold border border-[#FFD700]'
+                        : 'bg-white text-amber-950 hover:bg-amber-100 border border-amber-300'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{language === 'en' ? cat.labelEn : cat.labelOr}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                      isSelected ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* LEVEL 4: DAY SUBCATEGORIES (Only shown when Day 1, Day 2, Day 3, or Day 4 is selected) */}
+          {isDaySelected && (
+            <div className="p-3 bg-amber-100/70 rounded-xl border border-amber-300/80 animate-fadeIn space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-[#8B0000] uppercase tracking-wider flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-[#B8001F]" />
+                  <span>
+                    {language === 'en'
+                      ? `${getCategoryDisplayLabel(activeCategory)} Events & Categories:`
+                      : `${getCategoryDisplayLabel(activeCategory)} କାର୍ଯ୍ୟକ୍ରମ:`}
+                  </span>
+                </span>
+                <span className="text-[10px] text-amber-950/70 font-semibold">
+                  {language === 'en' ? 'Filter by program type' : 'ବିଭାଗ ଅନୁସାରେ ଫିଲ୍ଟର କରନ୍ତୁ'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 overflow-x-auto text-xs font-bold pb-0.5">
+                {DAY_SUBCATEGORIES.map((sub) => {
+                  const subCount = getSubCategoryCount(sub.id);
+                  const isSelected = activeSubCategory === sub.id;
+
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => setActiveSubCategory(sub.id)}
+                      className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-[#B8001F] text-white shadow-xs font-black border border-[#FFD700]'
+                          : 'bg-white text-amber-950 hover:bg-amber-200/70 border border-amber-300'
+                      }`}
+                    >
+                      <span>{sub.icon}</span>
+                      <span>{language === 'en' ? sub.labelEn : sub.labelOr}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                        isSelected ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {subCount}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ACTIVE FILTER SUMMARY & RESET BAR */}
+          {(activeYear !== 'all' || activeCategory !== 'all' || activeSubCategory !== 'all' || searchQuery) && (
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-200/80 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 text-amber-900 font-semibold">
+                <span className="text-[11px] text-amber-900/70 uppercase tracking-wider font-bold">Applied:</span>
+                {activeYear !== 'all' && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-950 font-bold text-[11px]">
+                    Year: {activeYear}
+                  </span>
+                )}
+                {activeCategory !== 'all' && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-950 font-bold text-[11px]">
+                    Category: {getCategoryDisplayLabel(activeCategory)}
+                  </span>
+                )}
+                {isDaySelected && activeSubCategory !== 'all' && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-950 font-bold text-[11px]">
+                    Sub: {getSubcategoryDisplayLabel(activeSubCategory)}
+                  </span>
+                )}
+                {searchQuery && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-950 font-bold text-[11px]">
+                    Query: "{searchQuery}"
+                  </span>
+                )}
+                <span className="text-[11px] font-bold text-[#8B0000] ml-1">
+                  ({filteredGallery.length} {activeMediaType === 'image' ? 'photos' : 'videos'})
+                </span>
+              </div>
+
+              <button
+                onClick={handleResetFilters}
+                className="px-3 py-1 rounded-lg bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <X className="w-3.5 h-3.5 text-[#B8001F]" />
+                <span>{language === 'en' ? 'Clear All Filters' : 'ଫିଲ୍ଟର ହଟାନ୍ତୁ'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* MEDIA DISPLAY (YEAR-WISE SECTIONS) */}
+        {/* ======================================================== */}
+        {/* MEDIA DISPLAY (YEAR-WISE SECTIONS WITH METADATA TAGS) */}
+        {/* ======================================================== */}
         {filteredGallery.length === 0 ? (
           /* Empty State */
           <div className="text-center py-16 px-4 bg-amber-50/50 rounded-2xl border-2 border-dashed border-amber-300 my-8">
@@ -398,13 +590,13 @@ export const GalleryAndVR: React.FC = () => {
             </div>
             <h4 className="text-lg font-bold font-serif-royal text-[#7D0000] mb-1">
               {language === 'en' 
-                ? `No ${activeMediaType === 'image' ? 'Photos' : 'Videos'} Found for Selected Filters`
-                : `ବାଛିଥିବା ଫିଲ୍ଟର ପାଇଁ କୌଣସି ${activeMediaType === 'image' ? 'ଫଟୋ' : 'ଭିଡିଓ'} ମିଳିଲା ନାହିଁ`}
+                ? `No ${activeMediaType === 'image' ? 'Photos' : 'Videos'} Found for Selected Category`
+                : `ବାଛିଥିବା ବିଭାଗ ପାଇଁ କୌଣସି ${activeMediaType === 'image' ? 'ଫଟୋ' : 'ଭିଡିଓ'} ମିଳିଲା ନାହିଁ`}
             </h4>
             <p className="text-xs text-amber-950/70 max-w-md mx-auto mb-4">
               {language === 'en' 
-                ? `Try selecting a different year or category, or switch between photos and videos.`
-                : `ଅନ୍ୟ ଏକ ବର୍ଷ ବା ବିଭାଗ ବାଛନ୍ତୁ କିମ୍ବା ଫଟୋ ଓ ଭିଡିଓ ମଧ୍ୟରେ ପରିବର୍ତ୍ତନ କରନ୍ତୁ ।`}
+                ? `Try switching between Day 1 - Day 4, Bhasani, Minabazar, or select 'All Categories'.`
+                : `ଦୟାକରି ଅନ୍ୟ ଏକ ବିଭାଗ ବାଛନ୍ତୁ କିମ୍ବା ସମସ୍ତ ବିଭାଗ ଦେଖନ୍ତୁ ।`}
             </p>
             <button
               onClick={handleResetFilters}
@@ -431,7 +623,9 @@ export const GalleryAndVR: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="text-xl sm:text-2xl font-bold font-serif-royal text-[#7D0000]">
-                          {language === 'en' ? `${year} Festive ${activeMediaType === 'image' ? 'Photo' : 'Video'} Collection` : `${year} ମସିହାର ${activeMediaType === 'image' ? 'ଫଟୋ' : 'ଭିଡିଓ'} ସଂଗ୍ରହ`}
+                          {language === 'en' 
+                            ? `${year} Festive ${activeMediaType === 'image' ? 'Photo' : 'Video'} Collection` 
+                            : `${year} ମସିହାର ${activeMediaType === 'image' ? 'ଫଟୋ' : 'ଭିଡିଓ'} ସଂଗ୍ରହ`}
                         </h3>
                         <p className="text-xs text-amber-950/75 font-medium">
                           {getYearSubtitle(year)}
@@ -475,10 +669,17 @@ export const GalleryAndVR: React.FC = () => {
                               {item.year}
                             </span>
 
-                            {/* Category Badge */}
-                            <span className="absolute top-2.5 right-2.5 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs capitalize">
-                              {item.category}
+                            {/* Main Category Badge */}
+                            <span className="absolute top-2.5 right-2.5 bg-black/75 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs capitalize border border-amber-400/30">
+                              {getCategoryDisplayLabel(item.category)}
                             </span>
+
+                            {/* SubCategory Badge if available */}
+                            {item.subCategory && (
+                              <span className="absolute bottom-2.5 left-2.5 bg-[#7D0000]/90 text-[#FFD700] text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs border border-[#FFD700]/40">
+                                {getSubcategoryDisplayLabel(item.subCategory)}
+                              </span>
+                            )}
                           </div>
 
                           <div className="p-3.5 bg-white flex-1 flex flex-col justify-between">
@@ -486,7 +687,7 @@ export const GalleryAndVR: React.FC = () => {
                               {language === 'en' ? item.titleEn : item.titleOr}
                             </h4>
                             <div className="pt-2 mt-2 border-t border-amber-100 flex items-center justify-between text-[11px] text-amber-900/60 font-medium">
-                              <span className="capitalize">{item.category}</span>
+                              <span className="capitalize">{getCategoryDisplayLabel(item.category)}</span>
                               <span className="text-[#B8001F] font-bold group-hover:underline">Click to Expand</span>
                             </div>
                           </div>
@@ -526,15 +727,22 @@ export const GalleryAndVR: React.FC = () => {
                               <Calendar className="w-3 h-3" /> {item.year}
                             </span>
 
-                            {/* Video Badge */}
+                            {/* Video 4K Badge */}
                             <span className="absolute top-3 right-3 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs flex items-center gap-1 border border-amber-500/30">
                               <Film className="w-3 h-3 text-[#FFD700]" /> 4K VIDEO
                             </span>
 
                             {/* Category Pill */}
-                            <span className="absolute bottom-3 left-3 bg-[#7D0000]/80 text-[#FFD700] text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs capitalize border border-[#FFD700]/30">
-                              {item.category}
-                            </span>
+                            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 flex-wrap">
+                              <span className="bg-[#7D0000]/90 text-[#FFD700] text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs border border-[#FFD700]/30">
+                                {getCategoryDisplayLabel(item.category)}
+                              </span>
+                              {item.subCategory && (
+                                <span className="bg-black/75 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-xs border border-amber-400/30">
+                                  {getSubcategoryDisplayLabel(item.subCategory)}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           <div className="p-4 bg-white flex-1 flex flex-col justify-between">
@@ -565,18 +773,23 @@ export const GalleryAndVR: React.FC = () => {
 
         {/* SELECTED PHOTO LIGHTBOX MODAL */}
         {selectedPhoto && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
             <div className="max-w-4xl w-full bg-white rounded-2xl border-2 border-[#D4AF37] overflow-hidden relative shadow-2xl flex flex-col">
               
               {/* Modal Top Bar */}
               <div className="p-3.5 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="bg-[#B8001F] text-[#FFD700] text-xs font-black px-2 py-0.5 rounded shadow-xs">
+                  <span className="bg-[#B8001F] text-[#FFD700] text-xs font-black px-2.5 py-0.5 rounded shadow-xs">
                     {selectedPhoto.year}
                   </span>
-                  <span className="text-xs uppercase font-bold text-amber-900/80 bg-white px-2 py-0.5 rounded border border-amber-200">
-                    {selectedPhoto.category}
+                  <span className="text-xs font-bold text-amber-900 bg-white px-2.5 py-0.5 rounded border border-amber-200">
+                    {getCategoryDisplayLabel(selectedPhoto.category)}
                   </span>
+                  {selectedPhoto.subCategory && (
+                    <span className="text-xs font-bold text-[#7D0000] bg-amber-100 px-2.5 py-0.5 rounded border border-amber-300">
+                      {getSubcategoryDisplayLabel(selectedPhoto.subCategory)}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => setSelectedPhoto(null)}
@@ -615,7 +828,7 @@ export const GalleryAndVR: React.FC = () => {
                   className="crimson-button px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 text-white shrink-0 cursor-pointer shadow-md"
                 >
                   <Download className="w-4 h-4 text-[#FFD700]" />
-                  <span>Download Photo</span>
+                  <span>Download High-Res Photo</span>
                 </a>
               </div>
             </div>
@@ -624,7 +837,7 @@ export const GalleryAndVR: React.FC = () => {
 
         {/* SELECTED VIDEO PLAYER MODAL */}
         {selectedVideo && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="max-w-4xl w-full bg-stone-900 rounded-2xl border-2 border-[#D4AF37] overflow-hidden relative shadow-2xl flex flex-col">
               
               {/* Modal Top Bar */}
@@ -633,9 +846,14 @@ export const GalleryAndVR: React.FC = () => {
                   <span className="bg-[#B8001F] text-[#FFD700] text-xs font-black px-2 py-0.5 rounded shrink-0">
                     {selectedVideo.year}
                   </span>
-                  <span className="text-xs uppercase font-bold text-amber-400 bg-stone-800 px-2 py-0.5 rounded shrink-0">
-                    {selectedVideo.category}
+                  <span className="text-xs font-bold text-amber-300 bg-stone-800 px-2 py-0.5 rounded shrink-0">
+                    {getCategoryDisplayLabel(selectedVideo.category)}
                   </span>
+                  {selectedVideo.subCategory && (
+                    <span className="text-xs font-bold text-[#FFD700] bg-[#7D0000] px-2 py-0.5 rounded shrink-0">
+                      {getSubcategoryDisplayLabel(selectedVideo.subCategory)}
+                    </span>
+                  )}
                   <h3 className="text-sm sm:text-base font-bold font-serif-royal text-amber-100 truncate">
                     {language === 'en' ? selectedVideo.titleEn : selectedVideo.titleOr}
                   </h3>
@@ -670,25 +888,23 @@ export const GalleryAndVR: React.FC = () => {
                 )}
               </div>
 
-              {/* Video Modal Footer */}
-              <div className="p-3.5 bg-stone-950 flex flex-wrap items-center justify-between gap-3 border-t border-amber-500/20 text-xs">
-                <div className="flex items-center gap-2 text-stone-300">
-                  <span className="text-amber-400 font-bold">
-                    {language === 'en' ? `${selectedVideo.year} Video Archive` : `${selectedVideo.year} ବର୍ଷର ଭିଡିଓ ଅଭିଲେଖ`}
+              {/* Modal Footer */}
+              <div className="p-3.5 bg-stone-900 border-t border-amber-500/20 text-white flex items-center justify-between text-xs">
+                <div className="truncate">
+                  <span className="font-bold text-amber-200">
+                    {language === 'en' ? selectedVideo.titleEn : selectedVideo.titleOr}
                   </span>
-                  <span>•</span>
-                  <span className="text-stone-400">Jharapada Durga Puja Samitee Official</span>
                 </div>
-
-                <a
-                  href={selectedVideo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="gold-button px-3.5 py-1.5 rounded-xl text-xs font-bold text-amber-950 flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-amber-300"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-[#B8001F]" />
-                  <span>{language === 'en' ? 'Open in YouTube' : 'ୟୁଟ୍ୟୁବ୍ ରେ ଖୋଲନ୍ତୁ'}</span>
-                </a>
+                {selectedVideo.url && (
+                  <a
+                    href={selectedVideo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-400 hover:text-amber-300 underline font-bold shrink-0 ml-3"
+                  >
+                    Open Source Video Link ↗
+                  </a>
+                )}
               </div>
             </div>
           </div>
