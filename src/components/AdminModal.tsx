@@ -1795,7 +1795,7 @@ export const AdminModal: React.FC = () => {
                         onChange={(e) => setUploadYear(Number(e.target.value))}
                         className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-xs text-amber-950 font-bold focus:outline-none focus:border-[#B8001F]"
                       >
-                        <option value={2026}>2026 (50th Golden Jubilee)</option>
+                        <option value={2026}>2026 (16th Golden Jubilee)</option>
                         <option value={2025}>2025</option>
                         <option value={2024}>2024</option>
                         <option value={2023}>2023</option>
@@ -1919,11 +1919,10 @@ export const AdminModal: React.FC = () => {
                           key={cat}
                           type="button"
                           onClick={() => setAdminMediaFilter(cat)}
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
-                            adminMediaFilter === cat
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${adminMediaFilter === cat
                               ? 'bg-[#B8001F] text-white shadow-xs'
                               : 'bg-amber-100/70 text-amber-900 hover:bg-amber-200'
-                          }`}
+                            }`}
                         >
                           {cat === 'all' ? 'All' : cat === 'day1' ? 'Day 1' : cat === 'day2' ? 'Day 2' : cat === 'day3' ? 'Day 3' : cat === 'day4' ? 'Day 4' : cat === 'bhasani' ? 'Bhasani' : cat === 'emergency' ? 'Emergency' : 'Minabazar'}
                         </button>
@@ -1935,50 +1934,50 @@ export const AdminModal: React.FC = () => {
                     {gallery
                       .filter(g => adminMediaFilter === 'all' || g.category === adminMediaFilter)
                       .map((g) => (
-                      <div
-                        key={g.id}
-                        className="p-2.5 bg-white rounded-xl border border-amber-200 flex items-center justify-between gap-3 hover:border-[#B8001F] transition-all shadow-xs"
-                      >
-                        <div className="flex items-center gap-2.5 overflow-hidden">
-                          <div className="w-12 h-12 rounded-lg bg-amber-50 overflow-hidden border border-amber-200 shrink-0">
-                            <img src={g.thumbnailUrl || g.url} alt={g.titleEn} className="w-full h-full object-cover" />
-                          </div>
-                          <div className="truncate text-xs">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${g.type === 'video' ? 'bg-purple-700 text-white' : 'bg-blue-600 text-white'
-                                }`}>
-                                {g.type === 'video' ? '🎬 VIDEO' : '📷 PHOTO'}
-                              </span>
-                              <span className="px-1.5 py-0.2 rounded bg-[#B8001F] text-[#FFD700] text-[9px] font-black">{g.year}</span>
-                            </div>
-                            <h5 className="font-bold text-amber-950 truncate">{g.titleEn}</h5>
-                            <div className="flex items-center gap-1.5 text-[10px] text-amber-900/70 font-medium mt-0.5">
-                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 uppercase font-bold text-[9px]">
-                                {g.category === 'day1' ? 'Day 1' : g.category === 'day2' ? 'Day 2' : g.category === 'day3' ? 'Day 3' : g.category === 'day4' ? 'Day 4' : g.category}
-                              </span>
-                              {g.subCategory && (
-                                <span className="px-1.5 py-0.2 rounded bg-purple-100 text-purple-900 font-bold text-[9px]">
-                                  {g.subCategory === 'vip' ? '🎖️ VIP' : g.subCategory === 'cultural' ? '🎭 Cultural' : '🪔 Rituals'}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete "${g.titleEn}" from the live gallery?`)) {
-                              deleteGalleryItem(g.id);
-                            }
-                          }}
-                          className="p-2 rounded-lg bg-red-100 hover:bg-red-600 text-red-600 hover:text-white border border-red-300 transition-all shrink-0"
-                          title="Delete File"
+                        <div
+                          key={g.id}
+                          className="p-2.5 bg-white rounded-xl border border-amber-200 flex items-center justify-between gap-3 hover:border-[#B8001F] transition-all shadow-xs"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                          <div className="flex items-center gap-2.5 overflow-hidden">
+                            <div className="w-12 h-12 rounded-lg bg-amber-50 overflow-hidden border border-amber-200 shrink-0">
+                              <img src={g.thumbnailUrl || g.url} alt={g.titleEn} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="truncate text-xs">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${g.type === 'video' ? 'bg-purple-700 text-white' : 'bg-blue-600 text-white'
+                                  }`}>
+                                  {g.type === 'video' ? '🎬 VIDEO' : '📷 PHOTO'}
+                                </span>
+                                <span className="px-1.5 py-0.2 rounded bg-[#B8001F] text-[#FFD700] text-[9px] font-black">{g.year}</span>
+                              </div>
+                              <h5 className="font-bold text-amber-950 truncate">{g.titleEn}</h5>
+                              <div className="flex items-center gap-1.5 text-[10px] text-amber-900/70 font-medium mt-0.5">
+                                <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 uppercase font-bold text-[9px]">
+                                  {g.category === 'day1' ? 'Day 1' : g.category === 'day2' ? 'Day 2' : g.category === 'day3' ? 'Day 3' : g.category === 'day4' ? 'Day 4' : g.category}
+                                </span>
+                                {g.subCategory && (
+                                  <span className="px-1.5 py-0.2 rounded bg-purple-100 text-purple-900 font-bold text-[9px]">
+                                    {g.subCategory === 'vip' ? '🎖️ VIP' : g.subCategory === 'cultural' ? '🎭 Cultural' : '🪔 Rituals'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to delete "${g.titleEn}" from the live gallery?`)) {
+                                deleteGalleryItem(g.id);
+                              }
+                            }}
+                            className="p-2 rounded-lg bg-red-100 hover:bg-red-600 text-red-600 hover:text-white border border-red-300 transition-all shrink-0"
+                            title="Delete File"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                   </div>
                 </div>
               </div>

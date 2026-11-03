@@ -64,8 +64,8 @@ export const HeritageStory: React.FC = () => {
           </h2>
           <p className="text-amber-950/80 text-sm sm:text-base font-medium">
             {language === 'en'
-              ? 'Discover the rich 50-year legacy of Jharapada Durga Puja Samitee, famous across Odisha for royal fort pandals, gold medals, and community feasts.'
-              : '୫୦ ବର୍ଷର ଗୌରବମୟ ଇତିହାସ, ସୁନା ଚାନ୍ଦି ମେଢ଼ ଓ ଐତିହାସିକ ତୋରଣ ନିର୍ମାଣର କାହାଣୀ ।'}
+              ? 'Discover the rich 16-year legacy of Jharapada Durga Puja Samitee, famous across Odisha for royal fort pandals, gold medals, and community feasts.'
+              : '16 ବର୍ଷର ଗୌରବମୟ ଇତିହାସ, ସୁନା ଚାନ୍ଦି ମେଢ଼ ଓ ଐତିହାସିକ ତୋରଣ ନିର୍ମାଣର କାହାଣୀ ।'}
           </p>
         </div>
 
@@ -162,8 +162,8 @@ export const HeritageStory: React.FC = () => {
             <button
               onClick={() => setActiveTab('all')}
               className={`px-4 py-2 rounded-xl transition-all ${activeTab === 'all'
-                  ? 'crimson-button text-white shadow-md'
-                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                ? 'crimson-button text-white shadow-md'
+                : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
                 }`}
             >
               All Archives ({historyStories.length})
@@ -172,8 +172,8 @@ export const HeritageStory: React.FC = () => {
             <button
               onClick={() => setActiveTab('press_note')}
               className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${activeTab === 'press_note'
-                  ? 'crimson-button text-white shadow-md'
-                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                ? 'crimson-button text-white shadow-md'
+                : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
                 }`}
             >
               <Newspaper className="w-4 h-4" />
@@ -183,8 +183,8 @@ export const HeritageStory: React.FC = () => {
             <button
               onClick={() => setActiveTab('member_story')}
               className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${activeTab === 'member_story'
-                  ? 'crimson-button text-white shadow-md'
-                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                ? 'crimson-button text-white shadow-md'
+                : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
                 }`}
             >
               <UserCheck className="w-4 h-4" />
@@ -194,8 +194,8 @@ export const HeritageStory: React.FC = () => {
             <button
               onClick={() => setActiveTab('achievement')}
               className={`px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all ${activeTab === 'achievement'
-                  ? 'crimson-button text-white shadow-md'
-                  : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
+                ? 'crimson-button text-white shadow-md'
+                : 'bg-white text-amber-950 border border-amber-200 hover:bg-amber-100'
                 }`}
             >
               <Award className="w-4 h-4" />

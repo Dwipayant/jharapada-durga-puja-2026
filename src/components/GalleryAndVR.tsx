@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import type { GalleryMedia } from '../types';
-import { 
-  Eye, 
-  Download, 
-  X, 
-  Camera, 
-  Upload, 
-  Compass, 
-  Play, 
-  Film, 
-  Calendar, 
+import {
+  Eye,
+  Download,
+  X,
+  Camera,
+  Upload,
+  Compass,
+  Play,
+  Film,
+  Calendar,
   Sparkles,
   Layers,
   Search,
@@ -153,8 +153,8 @@ export const GalleryAndVR: React.FC = () => {
       }
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const titleMatch = (item.titleEn?.toLowerCase() || '').includes(query) || 
-                           (item.titleOr?.toLowerCase() || '').includes(query);
+        const titleMatch = (item.titleEn?.toLowerCase() || '').includes(query) ||
+          (item.titleOr?.toLowerCase() || '').includes(query);
         if (!titleMatch) return false;
       }
       return true;
@@ -208,16 +208,16 @@ export const GalleryAndVR: React.FC = () => {
   const getYearSubtitle = (yr: number) => {
     switch (yr) {
       case 2026:
-        return language === 'en' 
-          ? '50th Golden Jubilee Celebration Edition' 
-          : '୫୦ତମ ସୁବର୍ଣ୍ଣ ଜୟନ୍ତୀ ମହୋତ୍ସବ ସଂସ୍କରଣ';
+        return language === 'en'
+          ? '16th Golden Jubilee Celebration Edition'
+          : '16ତମ ସୁବର୍ଣ୍ଣ ଜୟନ୍ତୀ ମହୋତ୍ସବ ସଂସ୍କରଣ';
       case 2025:
-        return language === 'en' 
-          ? 'Grand Festival & 108 Lotuses Sandhi Puja' 
+        return language === 'en'
+          ? 'Grand Festival & 108 Lotuses Sandhi Puja'
           : 'ମହାପୂଜା ଓ ୧୦୮ ପଦ୍ମ ସନ୍ଧି ପୂଜା ସ୍ମୃତି';
       case 2024:
-        return language === 'en' 
-          ? 'Mysore Palace Architecture Heritage' 
+        return language === 'en'
+          ? 'Mysore Palace Architecture Heritage'
           : 'ମହୀଶୂର ରାଜପ୍ରାସାଦ ତୋରଣ ଓ ଧୁନୁଚି ଆରତୀ';
       default:
         return language === 'en' ? `Festive Archives of ${yr}` : `${yr} ମସିହାର ସ୍ମରଣୀୟ ମୁହୂର୍ତ୍ତ`;
@@ -250,7 +250,7 @@ export const GalleryAndVR: React.FC = () => {
   return (
     <section id="gallery" className="py-16 bg-[#FFFDF8] relative text-amber-950 border-b border-[#D4AF37]/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/90 border border-[#D4AF37] text-[#B8001F] text-xs font-bold uppercase tracking-wider mb-3 shadow-xs">
@@ -310,7 +310,7 @@ export const GalleryAndVR: React.FC = () => {
                 <span className="text-[#7D0000] font-extrabold shrink-0 flex items-center gap-1">
                   <Compass className="w-4 h-4" /> 360 Camera Angle:
                 </span>
-                
+
                 {preset360Views.map(view => (
                   <button
                     key={view.id}
@@ -318,11 +318,10 @@ export const GalleryAndVR: React.FC = () => {
                       setActive360Url(view.url);
                       setActive360Title(view.nameEn);
                     }}
-                    className={`px-3 py-1.5 rounded-lg shrink-0 transition-all cursor-pointer ${
-                      active360Url === view.url
+                    className={`px-3 py-1.5 rounded-lg shrink-0 transition-all cursor-pointer ${active360Url === view.url
                         ? 'bg-[#B8001F] text-white shadow-xs font-bold border border-[#FFD700]'
                         : 'bg-white text-amber-950 border border-amber-300 hover:bg-amber-100'
-                    }`}
+                      }`}
                   >
                     {language === 'en' ? view.nameEn : view.nameOr}
                   </button>
@@ -343,34 +342,30 @@ export const GalleryAndVR: React.FC = () => {
           <div className="inline-flex p-1.5 rounded-2xl bg-amber-100/90 border-2 border-[#D4AF37] shadow-lg max-w-md w-full">
             <button
               onClick={() => setActiveMediaType('image')}
-              className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer ${
-                activeMediaType === 'image'
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer ${activeMediaType === 'image'
                   ? 'crimson-button text-white shadow-md border border-[#FFD700]'
                   : 'text-amber-950 hover:bg-amber-200/60'
-              }`}
+                }`}
             >
               <Camera className={`w-5 h-5 ${activeMediaType === 'image' ? 'text-[#FFD700]' : 'text-[#B8001F]'}`} />
               <span>{language === 'en' ? 'Photos' : 'ଫଟୋ ଗ୍ୟାଲେରୀ'}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-black ${
-                activeMediaType === 'image' ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-200 text-amber-900'
-              }`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-black ${activeMediaType === 'image' ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-200 text-amber-900'
+                }`}>
                 {totalPhotosCount}
               </span>
             </button>
 
             <button
               onClick={() => setActiveMediaType('video')}
-              className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer ${
-                activeMediaType === 'video'
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer ${activeMediaType === 'video'
                   ? 'crimson-button text-white shadow-md border border-[#FFD700]'
                   : 'text-amber-950 hover:bg-amber-200/60'
-              }`}
+                }`}
             >
               <Film className={`w-5 h-5 ${activeMediaType === 'video' ? 'text-[#FFD700]' : 'text-[#B8001F]'}`} />
               <span>{language === 'en' ? 'Videos' : 'ଭିଡିଓ ଗ୍ୟାଲେରୀ'}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-black ${
-                activeMediaType === 'video' ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-200 text-amber-900'
-              }`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-black ${activeMediaType === 'video' ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-200 text-amber-900'
+                }`}>
                 {totalVideosCount}
               </span>
             </button>
@@ -381,7 +376,7 @@ export const GalleryAndVR: React.FC = () => {
         {/* HIERARCHICAL FILTER CONTAINER */}
         {/* ======================================================== */}
         <div className="bg-amber-50/80 p-5 rounded-2xl border border-amber-300 mb-8 shadow-sm space-y-4">
-          
+
           {/* LEVEL 2: YEAR SELECTOR */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/80">
             <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
@@ -393,16 +388,14 @@ export const GalleryAndVR: React.FC = () => {
               {/* All Years Tab */}
               <button
                 onClick={() => setActiveYear('all')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                  activeYear === 'all'
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${activeYear === 'all'
                     ? 'bg-[#B8001F] text-white shadow-sm border border-[#FFD700]'
                     : 'bg-white text-amber-950 border border-amber-300 hover:bg-amber-100'
-                }`}
+                  }`}
               >
                 <span>{language === 'en' ? 'All Years' : 'ସମସ୍ତ ବର୍ଷ'}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                  activeYear === 'all' ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
-                }`}>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${activeYear === 'all' ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
+                  }`}>
                   {getYearCount('all')}
                 </span>
               </button>
@@ -412,21 +405,19 @@ export const GalleryAndVR: React.FC = () => {
                 <button
                   key={yr}
                   onClick={() => setActiveYear(yr)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                    activeYear === yr
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${activeYear === yr
                       ? 'bg-[#B8001F] text-white shadow-sm border border-[#FFD700]'
                       : 'bg-white text-amber-950 border border-amber-300 hover:bg-amber-100'
-                  }`}
+                    }`}
                 >
                   <span>{yr}</span>
                   {yr === 2026 && (
                     <span className="text-[9px] bg-[#FFD700] text-[#7D0000] px-1.5 py-0.2 rounded-full font-black uppercase tracking-tight">
-                      50th
+                      16th
                     </span>
                   )}
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                    activeYear === yr ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
-                  }`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${activeYear === yr ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
+                    }`}>
                     {getYearCount(yr)}
                   </span>
                 </button>
@@ -473,17 +464,15 @@ export const GalleryAndVR: React.FC = () => {
                       setActiveCategory(cat.id);
                       setActiveSubCategory('all'); // Reset subcategory when main category changes
                     }}
-                    className={`px-3 py-2 rounded-xl transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                      isSelected
+                    className={`px-3 py-2 rounded-xl transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${isSelected
                         ? 'bg-[#7D0000] text-white shadow-md font-extrabold border border-[#FFD700]'
                         : 'bg-white text-amber-950 hover:bg-amber-100 border border-amber-300'
-                    }`}
+                      }`}
                   >
                     <span>{cat.icon}</span>
                     <span>{language === 'en' ? cat.labelEn : cat.labelOr}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                      isSelected ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-100 text-amber-800'
-                    }`}>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${isSelected ? 'bg-[#FFD700] text-[#7D0000]' : 'bg-amber-100 text-amber-800'
+                      }`}>
                       {count}
                     </span>
                   </button>
@@ -518,17 +507,15 @@ export const GalleryAndVR: React.FC = () => {
                     <button
                       key={sub.id}
                       onClick={() => setActiveSubCategory(sub.id)}
-                      className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                        isSelected
+                      className={`px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${isSelected
                           ? 'bg-[#B8001F] text-white shadow-xs font-black border border-[#FFD700]'
                           : 'bg-white text-amber-950 hover:bg-amber-200/70 border border-amber-300'
-                      }`}
+                        }`}
                     >
                       <span>{sub.icon}</span>
                       <span>{language === 'en' ? sub.labelEn : sub.labelOr}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                        isSelected ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
-                      }`}>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${isSelected ? 'bg-amber-300 text-[#7D0000]' : 'bg-amber-100 text-amber-800'
+                        }`}>
                         {subCount}
                       </span>
                     </button>
@@ -589,12 +576,12 @@ export const GalleryAndVR: React.FC = () => {
               {activeMediaType === 'image' ? <Camera className="w-8 h-8" /> : <Film className="w-8 h-8" />}
             </div>
             <h4 className="text-lg font-bold font-serif-royal text-[#7D0000] mb-1">
-              {language === 'en' 
+              {language === 'en'
                 ? `No ${activeMediaType === 'image' ? 'Photos' : 'Videos'} Found for Selected Category`
                 : `ବାଛିଥିବା ବିଭାଗ ପାଇଁ କୌଣସି ${activeMediaType === 'image' ? 'ଫଟୋ' : 'ଭିଡିଓ'} ମିଳିଲା ନାହିଁ`}
             </h4>
             <p className="text-xs text-amber-950/70 max-w-md mx-auto mb-4">
-              {language === 'en' 
+              {language === 'en'
                 ? `Try switching between Day 1 - Day 4, Bhasani, Minabazar, or select 'All Categories'.`
                 : `ଦୟାକରି ଅନ୍ୟ ଏକ ବିଭାଗ ବାଛନ୍ତୁ କିମ୍ବା ସମସ୍ତ ବିଭାଗ ଦେଖନ୍ତୁ ।`}
             </p>
@@ -613,7 +600,7 @@ export const GalleryAndVR: React.FC = () => {
 
               return (
                 <div key={year} className="space-y-5 animate-fadeIn">
-                  
+
                   {/* Year Section Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b-2 border-[#D4AF37]/50 gap-2">
                     <div className="flex items-center gap-3">
@@ -623,8 +610,8 @@ export const GalleryAndVR: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="text-xl sm:text-2xl font-bold font-serif-royal text-[#7D0000]">
-                          {language === 'en' 
-                            ? `${year} Festive ${activeMediaType === 'image' ? 'Photo' : 'Video'} Collection` 
+                          {language === 'en'
+                            ? `${year} Festive ${activeMediaType === 'image' ? 'Photo' : 'Video'} Collection`
                             : `${year} ମସିହାର ${activeMediaType === 'image' ? 'ଫଟୋ' : 'ଭିଡିଓ'} ସଂଗ୍ରହ`}
                         </h3>
                         <p className="text-xs text-amber-950/75 font-medium">
@@ -775,7 +762,7 @@ export const GalleryAndVR: React.FC = () => {
         {selectedPhoto && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
             <div className="max-w-4xl w-full bg-white rounded-2xl border-2 border-[#D4AF37] overflow-hidden relative shadow-2xl flex flex-col">
-              
+
               {/* Modal Top Bar */}
               <div className="p-3.5 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -839,7 +826,7 @@ export const GalleryAndVR: React.FC = () => {
         {selectedVideo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="max-w-4xl w-full bg-stone-900 rounded-2xl border-2 border-[#D4AF37] overflow-hidden relative shadow-2xl flex flex-col">
-              
+
               {/* Modal Top Bar */}
               <div className="p-3.5 bg-black/80 border-b border-amber-500/30 flex items-center justify-between text-white">
                 <div className="flex items-center gap-2 overflow-hidden pr-2">
